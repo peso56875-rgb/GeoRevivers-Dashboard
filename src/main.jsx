@@ -33,6 +33,7 @@ const points = [
 
 function App() {
   const [page, setPage] = useState("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [records, setRecords] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("georevivers_records")) || initialRecords;
@@ -44,6 +45,17 @@ function App() {
   useEffect(() => {
     localStorage.setItem("georevivers_records", JSON.stringify(records));
   }, [records]);
+
+  // Handle ESC key to close sidebar
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setSidebarOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const addRecord = (record) => {
     setRecords((prev) => [{ ...record, id: Date.now(), addedBy: "Supervisor" }, ...prev]);
@@ -58,9 +70,18 @@ function App() {
 
   return (
     <div className="app-shell">
-      <Sidebar page={page} setPage={setPage} />
+      <Sidebar 
+        page={page} 
+        setPage={setPage} 
+        isOpen={sidebarOpen} 
+        onClose={() => setSidebarOpen(false)} 
+      />
       <main className="main">
-        <Topbar page={page} />
+        <Topbar 
+          page={page} 
+          onToggleMenu={() => setSidebarOpen((prev) => !prev)} 
+          isMenuOpen={sidebarOpen} 
+        />
         {page === "dashboard" && <Dashboard records={records} setPage={setPage} />}
         {page === "records" && <WasteRecords records={records} removeRecord={removeRecord} setPage={setPage} />}
         {page === "add" && <AddRecord addRecord={addRecord} />}
@@ -74,7 +95,7 @@ function App() {
   );
 }
 
-function Sidebar({ page, setPage }) {
+function Sidebar({ page, setPage, isOpen, onClose }) {
   const items = [
     ["dashboard", "⌂", "Dashboard"],
     ["records", "▤", "Waste Records"],
@@ -87,33 +108,54 @@ function Sidebar({ page, setPage }) {
   ];
 
   return (
-    <aside className="sidebar">
-      <div className="brand">
-        <img src="/georevivers-logo.jpeg" alt="GeoRevivers" />
-      </div>
-      <nav>
-        {items.map(([id, icon, label]) => (
-          <button
-            key={id}
-            className={`nav-item ${page === id ? "active" : ""}`}
-            onClick={() => setPage(id)}
+    <>
+      <div 
+        className={`sidebar-backdrop ${isOpen ? "open" : ""}`} 
+        onClick={onClose} 
+        aria-hidden="true" 
+      />
+      <aside className={`sidebar ${isOpen ? "open" : ""}`}>
+        <div className="sidebar-header">
+          <div className="brand">
+            <img src="/georevivers-logo.jpeg" alt="GeoRevivers" />
+          </div>
+          <button 
+            type="button" 
+            className="close-sidebar-btn" 
+            onClick={onClose} 
+            title="إغلاق القائمة (Close Menu)" 
+            aria-label="Close menu"
           >
-            <span className="nav-icon">{icon}</span>
-            <span>{label}</span>
-            {id === "add" && <span className="lock">🔒</span>}
+            ✕
           </button>
-        ))}
-      </nav>
-      <div className="side-message">
-        <div className="leaf">♻</div>
-        <b>Improving Soil Today</b>
-        <span>For a Better Tomorrow</span>
-      </div>
-    </aside>
+        </div>
+        <nav>
+          {items.map(([id, icon, label]) => (
+            <button
+              key={id}
+              className={`nav-item ${page === id ? "active" : ""}`}
+              onClick={() => {
+                setPage(id);
+                onClose();
+              }}
+            >
+              <span className="nav-icon">{icon}</span>
+              <span>{label}</span>
+              {id === "add" && <span className="lock">🔒</span>}
+            </button>
+          ))}
+        </nav>
+        <div className="side-message">
+          <div className="leaf">♻</div>
+          <b>Improving Soil Today</b>
+          <span>For a Better Tomorrow</span>
+        </div>
+      </aside>
+    </>
   );
 }
 
-function Topbar({ page }) {
+function Topbar({ page, onToggleMenu, isMenuOpen }) {
   const titles = {
     dashboard: ["Dashboard", "Overview of waste records and analytics"],
     records: ["Waste Records", "All registered waste collection records"],
@@ -124,7 +166,7 @@ function Topbar({ page }) {
     users: ["Users & Roles", "Manage system users and permissions"],
     settings: ["Settings", "System settings and profile"],
   };
-  const [title, subtitle] = titles[page];
+  const [title, subtitle] = titles[page] || ["Dashboard", "GeoRevivers"];
 
   return (
     <header className="topbar">
@@ -140,6 +182,17 @@ function Topbar({ page }) {
           <span>Admin</span>
         </div>
         <span>⌄</span>
+        <button
+          type="button"
+          className={`hamburger-btn ${isMenuOpen ? "active" : ""}`}
+          onClick={onToggleMenu}
+          title="القائمة الجانبية (Menu)"
+          aria-label="Toggle navigation menu"
+        >
+          <span className="bar"></span>
+          <span className="bar"></span>
+          <span className="bar"></span>
+        </button>
       </div>
     </header>
   );
