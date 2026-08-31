@@ -198,26 +198,157 @@ function Topbar({ page, onToggleMenu, isMenuOpen }) {
   );
 }
 
+const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
 function Dashboard({ records, setPage }) {
-  const total = records.reduce((s, r) => s + Number(r.quantity), 0);
+  const [filterType, setFilterType] = useState("");
+  const [filterDay, setFilterDay] = useState("");
+  const [filterMonth, setFilterMonth] = useState("");
+  const [filterYear, setFilterYear] = useState("");
+
+  const [appliedFilters, setAppliedFilters] = useState({
+    type: "",
+    day: "",
+    month: "",
+    year: "",
+  });
+
+  const handleApplyFilter = () => {
+    setAppliedFilters({
+      type: filterType,
+      day: filterDay,
+      month: filterMonth,
+      year: filterYear,
+    });
+  };
+
+  const handleResetFilter = () => {
+    setFilterType("");
+    setFilterDay("");
+    setFilterMonth("");
+    setFilterYear("");
+    setAppliedFilters({
+      type: "",
+      day: "",
+      month: "",
+      year: "",
+    });
+  };
+
+  const isFiltered = Boolean(
+    (appliedFilters.type && appliedFilters.type !== "All Waste Types") ||
+    (appliedFilters.day && appliedFilters.day !== "All Days") ||
+    (appliedFilters.month && appliedFilters.month !== "All Months") ||
+    (appliedFilters.year && appliedFilters.year !== "All Years")
+  );
+
+  const filteredRecords = useMemo(() => {
+    return records.filter((r) => {
+      if (!r.date) return false;
+      const parts = r.date.split("-");
+      const rYear = parts[0];
+      const rMonthNum = parseInt(parts[1], 10);
+      const rDayNum = parseInt(parts[2], 10);
+
+      // Waste Type
+      if (
+        appliedFilters.type &&
+        appliedFilters.type !== "All Waste Types" &&
+        r.type !== appliedFilters.type
+      ) {
+        return false;
+      }
+
+      // Day
+      if (
+        appliedFilters.day &&
+        appliedFilters.day !== "All Days"
+      ) {
+        if (rDayNum !== parseInt(appliedFilters.day, 10)) {
+          return false;
+        }
+      }
+
+      // Month
+      if (
+        appliedFilters.month &&
+        appliedFilters.month !== "All Months"
+      ) {
+        const monthIdx = MONTH_NAMES.indexOf(appliedFilters.month);
+        if (monthIdx !== -1) {
+          if (rMonthNum !== monthIdx + 1) return false;
+        } else {
+          if (rMonthNum !== parseInt(appliedFilters.month, 10)) return false;
+        }
+      }
+
+      // Year
+      if (
+        appliedFilters.year &&
+        appliedFilters.year !== "All Years"
+      ) {
+        if (rYear !== String(appliedFilters.year)) return false;
+      }
+
+      return true;
+    });
+  }, [records, appliedFilters]);
+
+  const total = filteredRecords.reduce((s, r) => s + Number(r.quantity), 0);
   const categories = WASTE_TYPES.map((type) => ({
     type,
-    total: records.filter((r) => r.type === type).reduce((s, r) => s + Number(r.quantity), 0),
+    total: filteredRecords.filter((r) => r.type === type).reduce((s, r) => s + Number(r.quantity), 0),
   }));
   const max = Math.max(...categories.map((c) => c.total), 1);
 
   return (
     <div className="content">
       <div className="stats-grid">
-        <StatCard icon="♻" value={total.toFixed(2)} label="Total Waste (Ton)" note="+12.5% vs last month" />
-        <StatCard icon="▤" value={records.length} label="Total Records" note="+8.7% vs last month" />
-        <StatCard icon="⌖" value={new Set(records.map((r) => r.point)).size} label="Collection Points" note="+6.3% vs last month" />
-        <StatCard icon="◈" value={WASTE_TYPES.length} label="Waste Categories" note="All categories" />
+        <StatCard 
+          icon="♻" 
+          value={total.toFixed(2)} 
+          label="Total Waste (Ton)" 
+          note={isFiltered ? `Filtered total (${filteredRecords.length} records)` : "+12.5% vs last month"} 
+        />
+        <StatCard 
+          icon="▤" 
+          value={filteredRecords.length} 
+          label="Total Records" 
+          note={isFiltered ? `Out of ${records.length} total records` : "+8.7% vs last month"} 
+        />
+        <StatCard 
+          icon="⌖" 
+          value={new Set(filteredRecords.map((r) => r.point)).size} 
+          label="Collection Points" 
+          note={isFiltered ? "Active points in filter" : "+6.3% vs last month"} 
+        />
+        <StatCard 
+          icon="◈" 
+          value={new Set(filteredRecords.map((r) => r.type)).size} 
+          label="Active Categories" 
+          note={isFiltered ? "Categories in filter" : "All categories"} 
+        />
       </div>
 
       <div className="two-col">
         <section className="card">
-          <div className="section-title"><h2>Waste Distribution</h2><span>By Quantity</span></div>
+          <div className="section-title">
+            <h2>Waste Distribution</h2>
+            <span>{isFiltered ? "Filtered by Quantity" : "By Quantity"}</span>
+          </div>
           <div className="donut-layout">
             <Donut categories={categories} total={total} />
             <div className="legend">
@@ -237,22 +368,56 @@ function Dashboard({ records, setPage }) {
             <h2>Recent Waste Records</h2>
             <button className="outline-btn" onClick={() => setPage("records")}>View All</button>
           </div>
-          <RecordsTable records={records.slice(0, 5)} compact />
+          <RecordsTable records={filteredRecords.slice(0, 5)} compact />
         </section>
       </div>
 
       <section className="card quick-filter">
-        <div className="section-title"><h2>Quick Filter</h2><span>Filter dashboard data</span></div>
-        <FilterBar />
+        <div className="section-title">
+          <div>
+            <h2>Quick Filter</h2>
+            <span style={{ display: "block", marginTop: "2px" }}>
+              {isFiltered ? `Showing ${filteredRecords.length} of ${records.length} records matching filter` : "Filter dashboard data"}
+            </span>
+          </div>
+          {isFiltered && (
+            <button 
+              type="button" 
+              className="outline-btn reset-tag-btn" 
+              onClick={handleResetFilter}
+            >
+              ↺ Reset Filter
+            </button>
+          )}
+        </div>
+        <FilterBar 
+          filterType={filterType}
+          setFilterType={setFilterType}
+          filterDay={filterDay}
+          setFilterDay={setFilterDay}
+          filterMonth={filterMonth}
+          setFilterMonth={setFilterMonth}
+          filterYear={filterYear}
+          setFilterYear={setFilterYear}
+          onApply={handleApplyFilter}
+          onReset={handleResetFilter}
+          isFiltered={isFiltered}
+          records={records}
+        />
       </section>
 
       <section className="card">
-        <div className="section-title"><h2>Waste Quantity by Category</h2><button className="green-btn" onClick={() => setPage("add")}>＋ Add Record</button></div>
+        <div className="section-title">
+          <h2>Waste Quantity by Category</h2>
+          <button className="green-btn" onClick={() => setPage("add")}>＋ Add Record</button>
+        </div>
         <div className="bar-chart">
           {categories.map((c) => (
             <div className="bar-item" key={c.type}>
               <div className="bar-value">{c.total.toFixed(1)}</div>
-              <div className="bar-track"><div className="bar-fill" style={{ height: `${(c.total / max) * 100}%` }} /></div>
+              <div className="bar-track">
+                <div className="bar-fill" style={{ height: `${total > 0 ? (c.total / max) * 100 : 0}%` }} />
+              </div>
               <small>{c.type.replace("Crushed ", "")}</small>
             </div>
           ))}
@@ -278,7 +443,7 @@ function Donut({ categories, total }) {
     <div className="donut">
       <svg viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="50" className="donut-bg" />
-        {categories.map((c, i) => {
+        {total > 0 && categories.map((c, i) => {
           const pct = total ? c.total / total : 0;
           const dash = pct * circumference;
           const el = <circle key={c.type} cx="60" cy="60" r="50" className={`donut-segment s${i}`}
@@ -293,14 +458,64 @@ function Donut({ categories, total }) {
   );
 }
 
-function FilterBar() {
+function FilterBar({
+  filterType,
+  setFilterType,
+  filterDay,
+  setFilterDay,
+  filterMonth,
+  setFilterMonth,
+  filterYear,
+  setFilterYear,
+  onApply,
+  onReset,
+  isFiltered,
+  records = [],
+}) {
+  const availableYears = useMemo(() => {
+    const yrs = new Set(["2026", "2025", "2024"]);
+    records.forEach((r) => {
+      if (r.date) yrs.add(r.date.split("-")[0]);
+    });
+    return Array.from(yrs).sort((a, b) => b - a);
+  }, [records]);
+
   return (
     <div className="filter-grid">
-      <Select label="Waste Type" options={["All Waste Types", ...WASTE_TYPES]} />
-      <Select label="Day" options={["All Days", ...Array.from({ length: 31 }, (_, i) => String(i + 1))]} />
-      <Select label="Month" options={["All Months", "January","February","March","April","May","June","July","August","September","October","November","December"]} />
-      <Select label="Year" options={["All Years", "2026", "2025", "2024"]} />
-      <button className="green-btn filter-btn">⌕ Apply Filter</button>
+      <Select 
+        label="Waste Type" 
+        options={["All Waste Types", ...WASTE_TYPES]} 
+        value={filterType} 
+        onChange={(e) => setFilterType(e.target.value)} 
+      />
+      <Select 
+        label="Day" 
+        options={["All Days", ...Array.from({ length: 31 }, (_, i) => String(i + 1))]} 
+        value={filterDay} 
+        onChange={(e) => setFilterDay(e.target.value)} 
+      />
+      <Select 
+        label="Month" 
+        options={["All Months", ...MONTH_NAMES]} 
+        value={filterMonth} 
+        onChange={(e) => setFilterMonth(e.target.value)} 
+      />
+      <Select 
+        label="Year" 
+        options={["All Years", ...availableYears]} 
+        value={filterYear} 
+        onChange={(e) => setFilterYear(e.target.value)} 
+      />
+      <div className="filter-actions">
+        <button type="button" className="green-btn filter-btn" onClick={onApply}>
+          ⌕ Apply Filter
+        </button>
+        {isFiltered && (
+          <button type="button" className="outline-btn reset-btn" onClick={onReset} title="Clear filter">
+            ↺ Reset
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -309,9 +524,20 @@ function Select({ label, options, value, onChange }) {
   return (
     <label className="field">
       <span>{label}</span>
-      <select value={value || ""} onChange={onChange}>
-        {!value && <option value="">Select {label}</option>}
-        {options.map((o) => <option key={o}>{o}</option>)}
+      <select 
+        value={value || ""} 
+        onChange={(e) => {
+          if (typeof onChange === "function") {
+            onChange(e);
+          }
+        }}
+      >
+        <option value="">Select {label}</option>
+        {options.map((o) => (
+          <option key={o} value={o}>
+            {o}
+          </option>
+        ))}
       </select>
     </label>
   );

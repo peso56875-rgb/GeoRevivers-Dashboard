@@ -562,14 +562,58 @@ tbody tr:hover {
 }
 
 .quick-filter {
-  padding-bottom: 18px;
+  padding-bottom: 22px;
 }
 
 .filter-grid {
   display: grid;
-  grid-template-columns: 1.4fr .8fr 1fr .9fr auto;
-  gap: 10px;
+  grid-template-columns: 1.3fr 0.8fr 1.1fr 0.9fr auto;
+  gap: 12px;
   align-items: end;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.filter-btn {
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+  padding: 0 16px;
+  font-weight: 600;
+}
+
+.reset-btn {
+  height: 38px;
+  color: #c53030;
+  border-color: #feb2b2;
+  background: #fff;
+  white-space: nowrap;
+  padding: 0 14px;
+}
+
+.reset-btn:hover {
+  background: #fff5f5;
+  border-color: #e53e3e;
+  color: #9b2c2c;
+}
+
+.reset-tag-btn {
+  color: #c53030;
+  border-color: #feb2b2;
+  font-size: 11px;
+}
+
+.reset-tag-btn:hover {
+  background: #fff5f5;
+  border-color: #e53e3e;
+  color: #9b2c2c;
 }
 
 .field {
@@ -596,10 +640,6 @@ tbody tr:hover {
 
 .field input:focus, .field select:focus, .search:focus {
   border-color: var(--green);
-}
-
-.filter-btn {
-  height: 38px;
 }
 
 .bar-chart {
