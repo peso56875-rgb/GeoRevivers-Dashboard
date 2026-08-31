@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
+import { initialRecords } from "./data.js";
 
 const WASTE_TYPES = [
   "Crushed Ceramic",
@@ -13,22 +14,12 @@ const WASTE_TYPES = [
 
 const CONDITIONS = ["Good", "Medium", "Poor"];
 
-const initialRecords = [
-  { id: 1, date: "2026-08-30", type: "Crushed Concrete", quantity: 12.5, point: "Point A", condition: "Good", addedBy: "Supervisor" },
-  { id: 2, date: "2026-08-29", type: "Crushed Ceramic", quantity: 8.75, point: "Point B", condition: "Medium", addedBy: "Supervisor" },
-  { id: 3, date: "2026-08-28", type: "Steel", quantity: 5.2, point: "Point C", condition: "Good", addedBy: "Operator 1" },
-  { id: 4, date: "2026-08-27", type: "Plastic", quantity: 3.1, point: "Point A", condition: "Poor", addedBy: "Operator 1" },
-  { id: 5, date: "2026-08-26", type: "Crushed Glass", quantity: 6.8, point: "Point D", condition: "Good", addedBy: "Supervisor" },
-  { id: 6, date: "2026-08-25", type: "Crushed Asphalt", quantity: 7.9, point: "Point E", condition: "Medium", addedBy: "Operator 2" },
-  { id: 7, date: "2026-08-24", type: "Crushed Concrete", quantity: 10.4, point: "Point A", condition: "Good", addedBy: "Operator 2" },
-];
-
 const points = [
-  { name: "Point A", city: "Cairo, Egypt", status: "Active" },
-  { name: "Point B", city: "Giza, Egypt", status: "Active" },
-  { name: "Point C", city: "Alexandria, Egypt", status: "Active" },
-  { name: "Point D", city: "10th of Ramadan, Egypt", status: "Active" },
-  { name: "Point E", city: "New Cairo, Egypt", status: "Active" },
+  { name: "موقع الإنشاءات الجديد", city: "القاهرة الجديدة", status: "Active" },
+  { name: "المستودع الرئيسي", city: "القاهرة", status: "Active" },
+  { name: "المدينة الجامعية", city: "الجيزة", status: "Active" },
+  { name: "الورشة المركزية", city: "العاشر من رمضان", status: "Active" },
+  { name: "مبنى الهندسة", city: "الإسكندرية", status: "Active" },
 ];
 
 function App() {
@@ -36,14 +27,21 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [records, setRecords] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem("georevivers_records")) || initialRecords;
+      const saved = localStorage.getItem("georevivers_records_v3");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length >= 20) {
+          return parsed;
+        }
+      }
+      return initialRecords;
     } catch {
       return initialRecords;
     }
   });
 
   useEffect(() => {
-    localStorage.setItem("georevivers_records", JSON.stringify(records));
+    localStorage.setItem("georevivers_records_v3", JSON.stringify(records));
   }, [records]);
 
   // Handle ESC key to close sidebar
@@ -220,6 +218,26 @@ function Dashboard({ records, setPage }) {
     year: "",
   });
 
+  const handleTypeChange = (val) => {
+    setFilterType(val);
+    setAppliedFilters((prev) => ({ ...prev, type: val }));
+  };
+
+  const handleDayChange = (val) => {
+    setFilterDay(val);
+    setAppliedFilters((prev) => ({ ...prev, day: val }));
+  };
+
+  const handleMonthChange = (val) => {
+    setFilterMonth(val);
+    setAppliedFilters((prev) => ({ ...prev, month: val }));
+  };
+
+  const handleYearChange = (val) => {
+    setFilterYear(val);
+    setAppliedFilters((prev) => ({ ...prev, year: val }));
+  };
+
   const handleApplyFilter = () => {
     setAppliedFilters({
       type: filterType,
@@ -261,17 +279,21 @@ function Dashboard({ records, setPage }) {
       if (
         appliedFilters.type &&
         appliedFilters.type !== "All Waste Types" &&
-        r.type !== appliedFilters.type
+        appliedFilters.type !== ""
       ) {
-        return false;
+        if (r.type.trim().toLowerCase() !== appliedFilters.type.trim().toLowerCase()) {
+          return false;
+        }
       }
 
       // Day
       if (
         appliedFilters.day &&
-        appliedFilters.day !== "All Days"
+        appliedFilters.day !== "All Days" &&
+        appliedFilters.day !== ""
       ) {
-        if (rDayNum !== parseInt(appliedFilters.day, 10)) {
+        const targetDay = parseInt(appliedFilters.day, 10);
+        if (rDayNum !== targetDay) {
           return false;
         }
       }
@@ -279,22 +301,27 @@ function Dashboard({ records, setPage }) {
       // Month
       if (
         appliedFilters.month &&
-        appliedFilters.month !== "All Months"
+        appliedFilters.month !== "All Months" &&
+        appliedFilters.month !== ""
       ) {
-        const monthIdx = MONTH_NAMES.indexOf(appliedFilters.month);
-        if (monthIdx !== -1) {
-          if (rMonthNum !== monthIdx + 1) return false;
-        } else {
-          if (rMonthNum !== parseInt(appliedFilters.month, 10)) return false;
+        const monthIdx = MONTH_NAMES.findIndex(
+          (m) => m.toLowerCase() === appliedFilters.month.toLowerCase()
+        );
+        const targetMonthNum = monthIdx !== -1 ? monthIdx + 1 : parseInt(appliedFilters.month, 10);
+        if (rMonthNum !== targetMonthNum) {
+          return false;
         }
       }
 
       // Year
       if (
         appliedFilters.year &&
-        appliedFilters.year !== "All Years"
+        appliedFilters.year !== "All Years" &&
+        appliedFilters.year !== ""
       ) {
-        if (rYear !== String(appliedFilters.year)) return false;
+        if (String(rYear) !== String(appliedFilters.year)) {
+          return false;
+        }
       }
 
       return true;
@@ -386,13 +413,13 @@ function Dashboard({ records, setPage }) {
         </div>
         <FilterBar 
           filterType={filterType}
-          setFilterType={setFilterType}
+          setFilterType={handleTypeChange}
           filterDay={filterDay}
-          setFilterDay={setFilterDay}
+          setFilterDay={handleDayChange}
           filterMonth={filterMonth}
-          setFilterMonth={setFilterMonth}
+          setFilterMonth={handleMonthChange}
           filterYear={filterYear}
-          setFilterYear={setFilterYear}
+          setFilterYear={handleYearChange}
           onApply={handleApplyFilter}
           onReset={handleResetFilter}
           isFiltered={isFiltered}
