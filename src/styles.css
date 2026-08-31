@@ -205,15 +205,25 @@ nav {
   justify-content: space-between;
 }
 
-.topbar h1 {
-  margin: 0;
-  font-size: 22px;
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.topbar p {
-  margin: 5px 0 0;
-  color: var(--muted);
-  font-size: 12px;
+.topbar-brand:hover {
+  opacity: 0.92;
+  transform: scale(1.02);
+}
+
+.topbar-logo {
+  height: 56px;
+  max-width: 180px;
+  object-fit: contain;
+  border-radius: 6px;
 }
 
 .top-actions {

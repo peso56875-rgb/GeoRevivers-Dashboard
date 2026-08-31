@@ -79,6 +79,7 @@ function App() {
       <main className="main">
         <Topbar 
           page={page} 
+          setPage={setPage}
           onToggleMenu={() => setSidebarOpen((prev) => !prev)} 
           isMenuOpen={sidebarOpen} 
         />
@@ -155,24 +156,17 @@ function Sidebar({ page, setPage, isOpen, onClose }) {
   );
 }
 
-function Topbar({ page, onToggleMenu, isMenuOpen }) {
-  const titles = {
-    dashboard: ["Dashboard", "Overview of waste records and analytics"],
-    records: ["Waste Records", "All registered waste collection records"],
-    add: ["Admin Panel", "Add a new waste record"],
-    analytics: ["Analytics & Reports", "Detailed insights and reports"],
-    categories: ["Waste Categories", "Manage material categories"],
-    points: ["Collection Points", "Manage collection locations"],
-    users: ["Users & Roles", "Manage system users and permissions"],
-    settings: ["Settings", "System settings and profile"],
-  };
-  const [title, subtitle] = titles[page] || ["Dashboard", "GeoRevivers"];
-
+function Topbar({ page, setPage, onToggleMenu, isMenuOpen }) {
   return (
     <header className="topbar">
-      <div>
-        <h1>{title}</h1>
-        <p>{subtitle}</p>
+      <div 
+        className="topbar-brand" 
+        onClick={() => setPage && setPage("dashboard")} 
+        role="button" 
+        tabIndex={0}
+        title="GeoRevivers - Home"
+      >
+        <img src="/georevivers-logo.jpeg" alt="GeoRevivers" className="topbar-logo" />
       </div>
       <div className="top-actions">
         <span className="bell">♧<i>3</i></span>
