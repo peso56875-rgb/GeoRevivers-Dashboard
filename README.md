@@ -1,13 +1,45 @@
 # GeoRevivers Dashboard
 
-لوحة تحكم تفاعلية لإدارة المخلفات (Waste Management Dashboard) تابعة لـ GeoRivers / GeoRevivers.
+React + Vite dashboard based on the GeoRevivers logo and blue/green visual identity.
 
-## المميزات
-- فلترة البيانات حسب الشهر (يناير - ديسمبر).
-- فلترة البيانات حسب نوع المخلفات (Crushed Asphalt, Crushed Ceramic, Crushed Concrete, Plastic, Steel).
-- إحصائيات فورية (إجمالي الكمية بالكيلوغرام، عدد العمليات).
-- رسم بياني تفاعلي باستخدام Chart.js.
-- جدول تفصيلي يوضح حالة النقطة والكمية والنوع لكل شهر.
+## Included pages
+- Dashboard Overview
+- Waste Records
+- Admin Panel / Add Waste Record
+- Analytics & Reports
+- Waste Categories
+- Collection Points
+- Users & Roles
+- Settings
 
-## التشغيل
-المشروع جاهز للرفع والتشغيل المباشر على منصات الاستضافة مثل **Vercel** أو **GitHub Pages** عبر ملف `index.html`.
+## Waste categories
+- Crushed Ceramic
+- Crushed Concrete
+- Crushed Asphalt
+- Crushed Glass
+- Steel
+- Plastic
+
+## Admin record fields
+- Date (Day / Month / Year)
+- Waste Type
+- Quantity (Ton)
+- Collection Point
+- Condition
+
+Records are saved to browser `localStorage` for the prototype, so refreshing the page keeps the data.
+
+## Run locally
+
+```bash
+npm install
+npm run dev
+```
+
+## Build for Vercel
+
+```bash
+npm run build
+```
+
+Vercel will detect Vite automatically. The output directory is `dist`.
