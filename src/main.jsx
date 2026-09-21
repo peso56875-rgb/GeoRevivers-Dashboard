@@ -41,7 +41,7 @@ function App() {
   const [showPinModal, setShowPinModal] = useState(false);
   const [adminPin, setAdminPin] = useState(() => {
     try { const s = localStorage.getItem("gr_admin_pin"); if (s) return s; } catch {}
-    return "1234";
+    return "hesham";
   });
   const [isAdminUnlocked, setIsAdminUnlocked] = useState(() => {
     try { return localStorage.getItem("gr_admin_unlocked") === "true"; } catch {}
@@ -146,7 +146,7 @@ function App() {
         {page==="categories" && <Categories records={records} wasteTypes={wasteTypes} addWasteType={addWasteType} removeWasteType={removeWasteType} />}
         {page==="points"     && <CollectionPoints points={points} addPoint={addPoint} removePoint={removePoint} />}
         {page==="users"      && <UsersRoles users={users} addUser={addUser} removeUser={removeUser} toggleUserAdminAccess={toggleUserAdminAccess} />}
-        {page==="settings"   && <Settings adminPin={adminPin} setAdminPin={setAdminPin} />}
+        {page==="settings"   && (isAdminUnlocked ? <Settings adminPin={adminPin} setAdminPin={setAdminPin} /> : <RestrictedAdminCard onUnlock={()=>setShowPinModal(true)} onBack={()=>setPage("dashboard")} />)}
       </main>
       {showPinModal && (
         <PinModal
@@ -771,9 +771,9 @@ function Settings({ adminPin, setAdminPin }) {
   };
 
   const handleResetPin = () => {
-    if (window.confirm("Reset Admin PIN to default (1234)?")) {
-      setAdminPin("1234");
-      setPinMsg("Admin PIN reset to 1234 ✓");
+    if (window.confirm("Reset Admin PIN to default (hesham)?")) {
+      setAdminPin("hesham");
+      setPinMsg("Admin PIN reset to hesham ✓");
       setTimeout(() => setPinMsg(""), 3500);
     }
   };
@@ -795,8 +795,8 @@ function Settings({ adminPin, setAdminPin }) {
             <button type="button" className="outline-btn pin-show-btn" onClick={()=>setShowCurrentPin(p=>!p)}>
               {showCurrentPin ? "Hide" : "Show"}
             </button>
-            <button type="button" className="outline-btn pin-reset-btn" onClick={handleResetPin} title="Reset to default 1234">
-              ↺ Reset (1234)
+            <button type="button" className="outline-btn pin-reset-btn" onClick={handleResetPin} title="Reset to default (hesham)">
+              ↺ Reset (hesham)
             </button>
           </div>
           <form onSubmit={handleUpdatePin} className="pin-change-form">
