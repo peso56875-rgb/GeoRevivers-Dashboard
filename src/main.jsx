@@ -678,13 +678,15 @@ function Categories({ records, wasteTypes, addWasteType, removeWasteType }) {
       </Modal>}
       <section className="card table-card">
         <div className="section-title"><h2>Waste Categories</h2><button className="green-btn" onClick={()=>setShow(true)}>＋ Add Category</button></div>
-        <table>
-          <thead><tr><th>Category Name</th><th>Description</th><th>Default Unit</th><th>Records</th><th>Status</th><th>Actions</th></tr></thead>
-          <tbody>
-            {wasteTypes.map(t=><tr key={t}><td><b>{t}</b></td><td>{t} waste material</td><td>Ton</td><td>{records.filter(r=>r.type===t).length}</td><td><span className="badge good">Active</span></td><td><button className="delete-btn" onClick={()=>removeWasteType(t)}>Delete</button></td></tr>)}
-            {!wasteTypes.length && <tr><td colSpan="6" className="empty">No categories.</td></tr>}
-          </tbody>
-        </table>
+        <div className="table-wrap">
+          <table className="modern-table">
+            <thead><tr><th>Category Name</th><th>Description</th><th>Default Unit</th><th>Records</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+              {wasteTypes.map(t=><tr key={t}><td><b>{t}</b></td><td>{t} waste material</td><td>Ton</td><td>{records.filter(r=>r.type===t).length}</td><td><span className="badge-pill good"><span className="badge-dot" />Active</span></td><td><button className="delete-btn" onClick={()=>removeWasteType(t)}>Delete</button></td></tr>)}
+              {!wasteTypes.length && <tr><td colSpan="6" className="empty">No categories.</td></tr>}
+            </tbody>
+          </table>
+        </div>
       </section>
     </div>
   );
