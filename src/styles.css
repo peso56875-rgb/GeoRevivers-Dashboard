@@ -70,14 +70,23 @@ button, input, select {
 }
 
 .welcome-brand {
-  width: 194px;
-  height: 70px;
+  width: 184px;
+  height: 64px;
   border: 1px solid rgba(255,255,255,.2);
   border-radius: 14px;
-  padding: 7px 12px;
+  padding: 6px 12px;
   background: #fff;
   cursor: pointer;
   box-shadow: 0 16px 35px rgba(0,0,0,.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.welcome-brand:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px rgba(0,0,0,.25);
 }
 
 .welcome-brand img {
@@ -282,28 +291,25 @@ button, input, select {
   height: 100%;
   border-radius: 50%;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #f8fbf5;
-  color: #063b68;
-  box-shadow: inset 0 0 0 1px rgba(6,59,104,.08);
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(6,59,104,.08), 0 16px 36px rgba(0,0,0,.15);
+  padding: 24px;
+  overflow: hidden;
 }
 
-.eco-disc svg {
-  width: 43%;
-  fill: #3fa34d;
-  margin-bottom: -10px;
+.welcome-hero-logo {
+  width: 88%;
+  height: 88%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.06));
+  transition: transform 0.4s ease;
 }
 
-.eco-disc span,
-.eco-disc b {
-  font-size: clamp(24px, 3.2vw, 42px);
-  line-height: .9;
-  letter-spacing: -.04em;
+.eco-disc:hover .welcome-hero-logo {
+  transform: scale(1.05);
 }
-
-.eco-disc b { color: #3f9e4f; }
 
 .floating-card {
   position: absolute;
@@ -332,17 +338,25 @@ button, input, select {
 .location-card {
   right: -3%;
   bottom: 18%;
-  padding: 14px 17px;
-  border-radius: 12px;
+  padding: 12px 16px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  background: #fff;
+  box-shadow: 0 18px 50px rgba(0,0,0,.2);
+}
+
+.location-delta-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .location-card div { display:grid; gap:3px; }
 .location-card strong { font-size: 11px; }
 .location-card small { color: #8495a0; font-size: 9px; }
-.location-dot { width:11px; height:11px; border-radius:50%; background:#65be36; box-shadow:0 0 0 6px #e7f5e3; }
 
 .leaf-shape { position:absolute; width:33px; height:58px; border-radius:100% 0 100% 0; background:#64be4c; opacity:.7; }
 .leaf-a { right:10%; top:10%; transform:rotate(24deg); }
@@ -436,17 +450,21 @@ button, input, select {
 }
 
 .brand {
-  height: 60px;
+  height: 52px;
   display: flex;
   align-items: center;
+  background: #ffffff;
+  padding: 4px 10px;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .brand img {
-  width: 155px;
-  height: 60px;
+  width: 140px;
+  height: 44px;
   object-fit: contain;
-  border-radius: 8px;
-  mix-blend-mode: screen;
+  border-radius: 4px;
 }
 
 /* Close Button in Sidebar */
@@ -562,17 +580,21 @@ nav {
   gap: 12px;
   cursor: pointer;
   user-select: none;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  background: #ffffff;
+  padding: 4px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  transition: opacity 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .topbar-brand:hover {
-  opacity: 0.92;
-  transform: scale(1.02);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
 }
 
 .topbar-logo {
-  height: 56px;
-  max-width: 180px;
+  height: 52px;
+  max-width: 170px;
   object-fit: contain;
   border-radius: 6px;
 }
@@ -1307,26 +1329,45 @@ tbody tr:hover {
 
 .map-label {
   position: absolute;
-  left: 18px;
-  top: 18px;
-  width: 190px;
+  left: 16px;
+  top: 16px;
   background: rgba(255,255,255,.96);
-  padding: 13px 15px;
+  backdrop-filter: blur(8px);
+  padding: 10px 14px;
+  border-radius: 12px;
   border-left: 4px solid var(--green);
   box-shadow: 0 10px 25px rgba(6,59,104,.16);
+  z-index: 4;
+}
+
+.map-label-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.map-delta-logo {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.08));
+}
+
+.map-label-text {
   display: grid;
-  gap: 3px;
+  gap: 2px;
 }
 
 .map-label small {
   color: var(--green);
-  font-size: 7px;
+  font-size: 8px;
   font-weight: 800;
-  letter-spacing: .13em;
+  letter-spacing: .12em;
 }
 
 .map-label strong { color: var(--navy); font-size: 13px; }
-.map-label span { color: var(--muted); font-size: 8px; }
+.map-label span { color: var(--muted); font-size: 9px; }
 
 .map-external {
   position: absolute;

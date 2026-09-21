@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 import { initialRecords } from "./data.js";
@@ -105,7 +105,7 @@ function WelcomePage({ onEnter, onExploreMap }) {
       <div className="welcome-orbit orbit-one" aria-hidden="true" />
       <div className="welcome-orbit orbit-two" aria-hidden="true" />
       <nav className="welcome-nav" aria-label="Welcome navigation">
-        <button className="welcome-brand" type="button" aria-label="GeoRevivers home">
+        <button className="welcome-brand" type="button" aria-label="GeoRevivers home" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
           <img src="/georevivers-logo.jpeg" alt="GeoRevivers" />
         </button>
         <div className="welcome-nav-actions">
@@ -138,16 +138,14 @@ function WelcomePage({ onEnter, onExploreMap }) {
           <div className="visual-grid" aria-hidden="true" />
           <div className="eco-disc">
             <div className="eco-disc-inner">
-              <svg viewBox="0 0 160 160" role="img" aria-label="Circular recycling symbol">
-                <path d="M80 24c23 0 43 14 52 34l-16 7 31 17 4-35-14 7C126 27 105 10 80 10 53 10 30 27 20 51l14 6C42 38 59 24 80 24Z" />
-                <path d="M128 94c-7 22-25 38-47 41l-2-18-22 28 30 20-3-15c27-5 49-24 58-49l-14-7Z" />
-                <path d="M43 105c-15-18-17-42-7-61l16 8L38 19 3 31l14 7C5 64 9 94 28 116c17 20 44 29 68 24l-3-15c-18 4-38-3-50-20Z" />
-              </svg>
-              <span>Geo</span><b>Revivers</b>
+              <img src="/georevivers-logo.jpeg" alt="GeoRevivers - Improve Soil · Redesign Ground" className="welcome-hero-logo" />
             </div>
           </div>
           <div className="floating-card impact-card"><span>Campus impact</span><strong>Cleaner by design</strong><i className="mini-line" /></div>
-          <div className="floating-card location-card"><span className="location-dot" /><div><strong>Delta University</strong><small>Gamasa, Egypt</small></div></div>
+          <div className="floating-card location-card">
+            <img src="/delta-university-logo.png" alt="Delta University" className="location-delta-logo" />
+            <div><strong>Delta University</strong><small>Gamasa, Egypt</small></div>
+          </div>
           <div className="leaf-shape leaf-a" aria-hidden="true" />
           <div className="leaf-shape leaf-b" aria-hidden="true" />
         </div>
@@ -565,7 +563,16 @@ function CollectionPoints({ points, addPoint, removePoint }) {
             />
             <div className="campus-map-shade" aria-hidden="true" />
             {points.map((p,i)=><button key={p.id} type="button" className="faculty-pin" style={{left:`${p.x ?? 25+(i%4)*17}%`,top:`${p.y ?? 25+Math.floor(i/4)*18}%`}} aria-label={p.name} title={p.name}><span>{i+1}</span></button>)}
-            <div className="map-label"><small>LIVE CAMPUS VIEW</small><strong>Delta University</strong><span>Gamasa · Dakahlia · Egypt</span></div>
+            <div className="map-label">
+              <div className="map-label-header">
+                <img src="/delta-university-logo.png" alt="Delta University" className="map-delta-logo" />
+                <div className="map-label-text">
+                  <small>LIVE CAMPUS VIEW</small>
+                  <strong>Delta University</strong>
+                  <span>Gamasa · Dakahlia · Egypt</span>
+                </div>
+              </div>
+            </div>
             <a className="map-external" href={`https://www.openstreetmap.org/?mlat=${UNIVERSITY_CENTER.lat}&mlon=${UNIVERSITY_CENTER.lng}#map=17/${UNIVERSITY_CENTER.lat}/${UNIVERSITY_CENTER.lng}`} target="_blank" rel="noreferrer">Open full map ↗</a>
           </div>
           <div className="map-footer"><span><i /> Faculty-based collection network</span><b>{points.length} active points</b></div>
