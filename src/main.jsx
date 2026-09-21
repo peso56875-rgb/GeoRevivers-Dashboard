@@ -29,15 +29,24 @@ const DEFAULT_POINTS = [
   { id:12, name:"Faculty of Energy Engineering",      city:"Delta University · Gamasa", status:"Active", x:82, y:62 },
 ];
 const DEFAULT_USERS = [
-  { id:1, name:"Supervisor", role:"Supervisor", email:"supervisor@georevivers.com", status:"Active" },
-  { id:2, name:"Operator 1", role:"Operator",   email:"operator.1@georevivers.com", status:"Active" },
-  { id:3, name:"Operator 2", role:"Operator",   email:"operator.2@georevivers.com", status:"Active" },
-  { id:4, name:"Viewer",     role:"Viewer",     email:"viewer@georevivers.com",     status:"Inactive"},
+  { id:1, name:"Supervisor", role:"Supervisor", email:"supervisor@georevivers.com", status:"Active", hasAdminAccess:true },
+  { id:2, name:"Operator 1", role:"Operator",   email:"operator.1@georevivers.com", status:"Active", hasAdminAccess:false },
+  { id:3, name:"Operator 2", role:"Operator",   email:"operator.2@georevivers.com", status:"Active", hasAdminAccess:false },
+  { id:4, name:"Viewer",     role:"Viewer",     email:"viewer@georevivers.com",     status:"Inactive", hasAdminAccess:false },
 ];
 
 function App() {
   const [page, setPage] = useState("welcome");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [adminPin, setAdminPin] = useState(() => {
+    try { const s = localStorage.getItem("gr_admin_pin"); if (s) return s; } catch {}
+    return "1234";
+  });
+  const [isAdminUnlocked, setIsAdminUnlocked] = useState(() => {
+    try { return localStorage.getItem("gr_admin_unlocked") === "true"; } catch {}
+    return false;
+  });
   const [records, setRecords] = useState(() => {
     try {
       const s = localStorage.getItem("georevivers_records_v3");
@@ -54,10 +63,23 @@ function App() {
     return DEFAULT_POINTS;
   });
   const [users, setUsers] = useState(() => {
-    try { const s = localStorage.getItem("gr_users"); if (s) return JSON.parse(s); } catch {}
+    try {
+      const s = localStorage.getItem("gr_users");
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (Array.isArray(parsed) && parsed.length) {
+          return parsed.map(u => ({
+            ...u,
+            hasAdminAccess: typeof u.hasAdminAccess === "boolean" ? u.hasAdminAccess : (u.role === "Supervisor" || u.role === "Admin"),
+          }));
+        }
+      }
+    } catch {}
     return DEFAULT_USERS;
   });
 
+  useEffect(() => { localStorage.setItem("gr_admin_pin", adminPin); }, [adminPin]);
+  useEffect(() => { localStorage.setItem("gr_admin_unlocked", String(isAdminUnlocked)); }, [isAdminUnlocked]);
   useEffect(() => { localStorage.setItem("georevivers_records_v3", JSON.stringify(records)); }, [records]);
   useEffect(() => { localStorage.setItem("gr_waste_types", JSON.stringify(wasteTypes)); }, [wasteTypes]);
   useEffect(() => { localStorage.setItem("gr_delta_faculty_points_v1", JSON.stringify(points)); }, [points]);
@@ -67,6 +89,23 @@ function App() {
     window.addEventListener("keydown", fn);
     return () => window.removeEventListener("keydown", fn);
   }, []);
+
+  const unlockAdmin = (pin) => {
+    if (pin === adminPin) {
+      setIsAdminUnlocked(true);
+      return true;
+    }
+    return false;
+  };
+
+  const lockAdmin = () => {
+    setIsAdminUnlocked(false);
+    if (page === "add") setPage("dashboard");
+  };
+
+  const toggleUserAdminAccess = (id) => {
+    setUsers(prev => prev.map(u => u.id === id ? { ...u, hasAdminAccess: !u.hasAdminAccess } : u));
+  };
 
   const addRecord    = (r) => { setRecords(p => [{ ...r, id: Date.now(), addedBy:"Supervisor" }, ...p]); setPage("records"); };
   const removeRecord = (id) => { if (window.confirm("Delete this waste record?")) setRecords(p => p.filter(r => r.id !== id)); };
@@ -83,18 +122,39 @@ function App() {
 
   return (
     <div className="app-shell">
-      <Sidebar page={page} setPage={setPage} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        page={page}
+        setPage={setPage}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        isAdminUnlocked={isAdminUnlocked}
+        onOpenPinModal={() => setShowPinModal(true)}
+      />
       <main className="main">
-        <Topbar setPage={setPage} onToggleMenu={() => setSidebarOpen(p => !p)} isMenuOpen={sidebarOpen} />
-        {page==="dashboard"  && <Dashboard  records={records} setPage={setPage} wasteTypes={wasteTypes} />}
-        {page==="records"    && <WasteRecords records={records} removeRecord={removeRecord} setPage={setPage} />}
-        {page==="add"        && <AddRecord addRecord={addRecord} wasteTypes={wasteTypes} points={points} />}
+        <Topbar
+          setPage={setPage}
+          onToggleMenu={() => setSidebarOpen(p => !p)}
+          isMenuOpen={sidebarOpen}
+          isAdminUnlocked={isAdminUnlocked}
+          onOpenPinModal={() => setShowPinModal(true)}
+          onLockAdmin={lockAdmin}
+        />
+        {page==="dashboard"  && <Dashboard records={records} setPage={setPage} wasteTypes={wasteTypes} isAdminUnlocked={isAdminUnlocked} onOpenPinModal={()=>setShowPinModal(true)} />}
+        {page==="records"    && <WasteRecords records={records} removeRecord={removeRecord} setPage={setPage} isAdminUnlocked={isAdminUnlocked} onOpenPinModal={()=>setShowPinModal(true)} />}
+        {page==="add"        && (isAdminUnlocked ? <AddRecord addRecord={addRecord} wasteTypes={wasteTypes} points={points} /> : <RestrictedAdminCard onUnlock={()=>setShowPinModal(true)} onBack={()=>setPage("dashboard")} />)}
         {page==="analytics"  && <Analytics records={records} wasteTypes={wasteTypes} />}
         {page==="categories" && <Categories records={records} wasteTypes={wasteTypes} addWasteType={addWasteType} removeWasteType={removeWasteType} />}
         {page==="points"     && <CollectionPoints points={points} addPoint={addPoint} removePoint={removePoint} />}
-        {page==="users"      && <UsersRoles users={users} addUser={addUser} removeUser={removeUser} />}
-        {page==="settings"   && <Settings />}
+        {page==="users"      && <UsersRoles users={users} addUser={addUser} removeUser={removeUser} toggleUserAdminAccess={toggleUserAdminAccess} />}
+        {page==="settings"   && <Settings adminPin={adminPin} setAdminPin={setAdminPin} />}
       </main>
+      {showPinModal && (
+        <PinModal
+          onClose={() => setShowPinModal(false)}
+          onUnlock={unlockAdmin}
+          users={users}
+        />
+      )}
     </div>
   );
 }
@@ -159,11 +219,12 @@ function WelcomePage({ onEnter, onExploreMap }) {
   );
 }
 
-function Sidebar({ page, setPage, isOpen, onClose }) {
+function Sidebar({ page, setPage, isOpen, onClose, isAdminUnlocked, onOpenPinModal }) {
   const items = [
     ["welcome","←","Welcome"],["dashboard","⌂","Dashboard"],["records","▤","Waste Records"],
     ["analytics","◔","Analytics & Reports"],["categories","◈","Waste Categories"],
-    ["points","⌖","Collection Points"],["add","+","Admin Panel"],
+    ["points","⌖","Collection Points"],
+    ...(isAdminUnlocked ? [["add","+","Admin Panel"]] : []),
     ["users","♙","Users & Roles"],["settings","⚙","Settings"],
   ];
   return (
@@ -181,6 +242,17 @@ function Sidebar({ page, setPage, isOpen, onClose }) {
               {id==="add" && <span className="lock">🔒</span>}
             </button>
           ))}
+          {!isAdminUnlocked && (
+            <button
+              type="button"
+              className="sidebar-unlock-btn"
+              onClick={() => { onOpenPinModal(); onClose(); }}
+              title="Unlock Admin Panel"
+            >
+              <span className="sidebar-unlock-icon">🔒</span>
+              <span>Unlock Admin Panel</span>
+            </button>
+          )}
         </nav>
         <div className="side-message">
           <div className="leaf">♻</div><b>Improving Soil Today</b><span>For a Better Tomorrow</span>
@@ -190,17 +262,41 @@ function Sidebar({ page, setPage, isOpen, onClose }) {
   );
 }
 
-function Topbar({ setPage, onToggleMenu, isMenuOpen }) {
+function Topbar({ setPage, onToggleMenu, isMenuOpen, isAdminUnlocked, onOpenPinModal, onLockAdmin }) {
   return (
     <header className="topbar">
       <div className="topbar-brand" onClick={() => setPage && setPage("dashboard")} role="button" tabIndex={0} title="GeoRevivers - Home">
         <img src="/georevivers-logo.jpeg" alt="GeoRevivers" className="topbar-logo" />
       </div>
       <div className="top-actions">
+        {isAdminUnlocked ? (
+          <button
+            type="button"
+            className="admin-badge-btn unlocked"
+            onClick={onLockAdmin}
+            title="Admin Panel Unlocked - Click to lock"
+          >
+            <span className="badge-pulse" />
+            <span className="badge-text">Admin Mode 🔓</span>
+            <span className="badge-action">Lock</span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="admin-badge-btn locked"
+            onClick={onOpenPinModal}
+            title="Unlock Admin Panel (PIN Required)"
+          >
+            <span className="badge-lock-icon">🔒</span>
+            <span className="badge-text">Admin Access</span>
+          </button>
+        )}
         <span className="bell">♧<i>3</i></span>
-        <div className="avatar">S</div>
-        <div className="user-meta"><strong>Supervisor</strong><span>Admin</span></div>
-        <span>⌄</span>
+        <div className="avatar">{isAdminUnlocked ? "S" : "V"}</div>
+        <div className="user-meta">
+          <strong>{isAdminUnlocked ? "Supervisor" : "Guest"}</strong>
+          <span>{isAdminUnlocked ? "Admin Authorized" : "Read-Only"}</span>
+        </div>
         <button type="button" className={`hamburger-btn ${isMenuOpen?"active":""}`} onClick={onToggleMenu} aria-label="Toggle menu">
           <span className="bar"></span><span className="bar"></span><span className="bar"></span>
         </button>
@@ -209,7 +305,7 @@ function Topbar({ setPage, onToggleMenu, isMenuOpen }) {
   );
 }
 
-function Dashboard({ records, setPage, wasteTypes }) {
+function Dashboard({ records, setPage, wasteTypes, isAdminUnlocked, onOpenPinModal }) {
   const [filterType, setFilterType]   = useState("");
   const [filterDay, setFilterDay]     = useState("");
   const [filterMonth, setFilterMonth] = useState("");
@@ -293,7 +389,14 @@ function Dashboard({ records, setPage, wasteTypes }) {
         />
       </section>
       <section className="card">
-        <div className="section-title"><h2>Waste Quantity by Category</h2><button className="green-btn" onClick={()=>setPage("add")}>＋ Add Record</button></div>
+        <div className="section-title">
+          <h2>Waste Quantity by Category</h2>
+          {isAdminUnlocked ? (
+            <button className="green-btn" onClick={()=>setPage("add")}>＋ Add Record</button>
+          ) : (
+            <button type="button" className="outline-btn admin-prompt-btn" onClick={onOpenPinModal} title="Unlock Admin to add records">🔒 Add Record (Admin)</button>
+          )}
+        </div>
         <div className="bar-chart">
           {categories.map(c => (
             <div className="bar-item" key={c.type}>
@@ -361,16 +464,20 @@ function Select({ label, options, value, onChange }) {
   );
 }
 
-function WasteRecords({ records, removeRecord, setPage }) {
+function WasteRecords({ records, removeRecord, setPage, isAdminUnlocked, onOpenPinModal }) {
   const [search, setSearch] = useState("");
   const filtered = records.filter(r=>`${r.type} ${r.point} ${r.condition} ${r.date}`.toLowerCase().includes(search.toLowerCase()));
   return (
     <div className="content">
       <div className="page-toolbar">
         <input className="search" placeholder="Search records..." value={search} onChange={e=>setSearch(e.target.value)} />
-        <button className="green-btn" onClick={()=>setPage("add")}>＋ Add Record</button>
+        {isAdminUnlocked ? (
+          <button className="green-btn" onClick={()=>setPage("add")}>＋ Add Record</button>
+        ) : (
+          <button type="button" className="outline-btn admin-prompt-btn" onClick={onOpenPinModal} title="Unlock Admin to add records">🔒 Add Record (Admin)</button>
+        )}
       </div>
-      <section className="card table-card"><RecordsTable records={filtered} onDelete={removeRecord} /></section>
+      <section className="card table-card"><RecordsTable records={filtered} onDelete={isAdminUnlocked ? removeRecord : null} /></section>
     </div>
   );
 }
@@ -582,15 +689,15 @@ function CollectionPoints({ points, addPoint, removePoint }) {
   );
 }
 
-function UsersRoles({ users, addUser, removeUser }) {
+function UsersRoles({ users, addUser, removeUser, toggleUserAdminAccess }) {
   const [show, setShow] = useState(false);
-  const [form, setForm] = useState({ name:"", role:"Operator", email:"", status:"Active" });
+  const [form, setForm] = useState({ name:"", role:"Operator", email:"", status:"Active", hasAdminAccess:false });
   const [err,  setErr]  = useState("");
-  const close = () => { setShow(false); setForm({name:"",role:"Operator",email:"",status:"Active"}); setErr(""); };
+  const close = () => { setShow(false); setForm({name:"",role:"Operator",email:"",status:"Active", hasAdminAccess:false}); setErr(""); };
   const add = () => {
     if(!form.name.trim()){ setErr("User name is required."); return; }
     if(!form.email.trim()){ setErr("Email is required."); return; }
-    addUser({ name:form.name.trim(), role:form.role, email:form.email.trim(), status:form.status }); close();
+    addUser({ name:form.name.trim(), role:form.role, email:form.email.trim(), status:form.status, hasAdminAccess:form.hasAdminAccess }); close();
   };
   return (
     <div className="content">
@@ -600,17 +707,45 @@ function UsersRoles({ users, addUser, removeUser }) {
           <label className="field"><span>Email</span><input type="email" placeholder="e.g. ahmed@georevivers.com" value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))} /></label>
           <label className="field"><span>Role</span><select value={form.role} onChange={e=>setForm(f=>({...f,role:e.target.value}))}>{ROLES.map(r=><option key={r}>{r}</option>)}</select></label>
           <label className="field"><span>Status</span><select value={form.status} onChange={e=>setForm(f=>({...f,status:e.target.value}))}><option>Active</option><option>Inactive</option></select></label>
+          <label className="checkbox-field">
+            <input type="checkbox" checked={form.hasAdminAccess} onChange={e=>setForm(f=>({...f,hasAdminAccess:e.target.checked}))} />
+            <span>Grant Admin Panel Access (صلاحية لوحة الأدمن)</span>
+          </label>
           {err && <p className="modal-err">{err}</p>}
         </div>
         <div className="modal-footer"><button className="outline-btn" onClick={close}>Cancel</button><button className="green-btn" onClick={add}>✓ Add User</button></div>
       </Modal>}
       <section className="card table-card">
-        <div className="section-title"><h2>Users &amp; Roles</h2><button className="green-btn" onClick={()=>setShow(true)}>＋ Add User</button></div>
+        <div className="section-title">
+          <div>
+            <h2>Users &amp; Roles</h2>
+            <span style={{display:"block",marginTop:"2px"}}>Manage team members and grant/revoke Admin Panel permissions</span>
+          </div>
+          <button className="green-btn" onClick={()=>setShow(true)}>＋ Add User</button>
+        </div>
         <table>
-          <thead><tr><th>User Name</th><th>Role</th><th>Email</th><th>Status</th><th>Actions</th></tr></thead>
+          <thead><tr><th>User Name</th><th>Role</th><th>Email</th><th>Admin Panel Access</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody>
-            {users.map(u=><tr key={u.id}><td><b>{u.name}</b></td><td>{u.role}</td><td>{u.email}</td><td><span className={`badge ${u.status==="Active"?"good":"poor"}`}>{u.status}</span></td><td><button className="delete-btn" onClick={()=>removeUser(u.id)}>Delete</button></td></tr>)}
-            {!users.length && <tr><td colSpan="5" className="empty">No users found.</td></tr>}
+            {users.map(u=>(
+              <tr key={u.id}>
+                <td><b>{u.name}</b></td>
+                <td>{u.role}</td>
+                <td>{u.email}</td>
+                <td>
+                  <button
+                    type="button"
+                    className={`perm-badge ${u.hasAdminAccess ? "allowed" : "denied"}`}
+                    onClick={() => toggleUserAdminAccess && toggleUserAdminAccess(u.id)}
+                    title="Click to toggle Admin Panel access permission"
+                  >
+                    {u.hasAdminAccess ? "✓ Authorized" : "✕ Restricted"}
+                  </button>
+                </td>
+                <td><span className={`badge ${u.status==="Active"?"good":"poor"}`}>{u.status}</span></td>
+                <td><button className="delete-btn" onClick={()=>removeUser(u.id)}>Delete</button></td>
+              </tr>
+            ))}
+            {!users.length && <tr><td colSpan="6" className="empty">No users found.</td></tr>}
           </tbody>
         </table>
       </section>
@@ -618,18 +753,181 @@ function UsersRoles({ users, addUser, removeUser }) {
   );
 }
 
-function Settings() {
+function Settings({ adminPin, setAdminPin }) {
+  const [newPin, setNewPin] = useState("");
+  const [pinMsg, setPinMsg] = useState("");
+  const [showCurrentPin, setShowCurrentPin] = useState(false);
+
+  const handleUpdatePin = (e) => {
+    e.preventDefault();
+    if (!newPin.trim() || newPin.trim().length < 4) {
+      setPinMsg("PIN must be at least 4 characters.");
+      return;
+    }
+    setAdminPin(newPin.trim());
+    setPinMsg("Admin PIN updated successfully! ✓");
+    setNewPin("");
+    setTimeout(() => setPinMsg(""), 3500);
+  };
+
+  const handleResetPin = () => {
+    if (window.confirm("Reset Admin PIN to default (1234)?")) {
+      setAdminPin("1234");
+      setPinMsg("Admin PIN reset to 1234 ✓");
+      setTimeout(() => setPinMsg(""), 3500);
+    }
+  };
+
   return (
-    <div className="content"><section className="card settings-card">
-      <div className="tabs"><b>Profile</b><span>System Settings</span><span>Backup &amp; Data</span><span>Notifications</span></div>
-      <div className="form-grid">
-        <label className="field"><span>Full Name</span><input defaultValue="Supervisor" /></label>
-        <label className="field"><span>Email</span><input defaultValue="supervisor@georevivers.com" /></label>
-        <label className="field"><span>Phone</span><input defaultValue="+20 100 123 4567" /></label>
-        <label className="field"><span>Password</span><input type="password" defaultValue="********" /></label>
+    <div className="content">
+      <section className="card settings-card">
+        <div className="tabs"><b>Security &amp; PIN</b><span>Profile</span><span>System Settings</span><span>Backup</span></div>
+        <div className="settings-section">
+          <div className="section-title">
+            <div>
+              <h3>Admin Panel Access PIN</h3>
+              <p style={{margin:"4px 0 0",color:"var(--muted)",fontSize:"12px"}}>Set the secret PIN code required to unlock and display the Admin Panel for authorized personnel.</p>
+            </div>
+          </div>
+          <div className="pin-current-box">
+            <span>Current PIN:</span>
+            <strong>{showCurrentPin ? adminPin : "••••"}</strong>
+            <button type="button" className="outline-btn pin-show-btn" onClick={()=>setShowCurrentPin(p=>!p)}>
+              {showCurrentPin ? "Hide" : "Show"}
+            </button>
+            <button type="button" className="outline-btn pin-reset-btn" onClick={handleResetPin} title="Reset to default 1234">
+              ↺ Reset (1234)
+            </button>
+          </div>
+          <form onSubmit={handleUpdatePin} className="pin-change-form">
+            <label className="field" style={{maxWidth:"320px"}}>
+              <span>Set New Admin PIN</span>
+              <input
+                type="password"
+                placeholder="Enter new PIN (min 4 characters)"
+                value={newPin}
+                onChange={e => { setNewPin(e.target.value); setPinMsg(""); }}
+                maxLength={12}
+              />
+            </label>
+            <button type="submit" className="green-btn" style={{alignSelf:"flex-end",height:"42px"}}>Update PIN</button>
+          </form>
+          {pinMsg && <div className="success" style={{marginTop:"12px"}}>{pinMsg}</div>}
+        </div>
+        <hr style={{margin:"28px 0",border:"0",borderTop:"1px solid var(--line)"}} />
+        <div className="settings-section">
+          <h3>Profile Settings</h3>
+          <div className="form-grid">
+            <label className="field"><span>Full Name</span><input defaultValue="Supervisor" /></label>
+            <label className="field"><span>Email</span><input defaultValue="supervisor@georevivers.com" /></label>
+            <label className="field"><span>Phone</span><input defaultValue="+20 100 123 4567" /></label>
+            <label className="field"><span>Password</span><input type="password" defaultValue="********" /></label>
+          </div>
+          <button className="green-btn" style={{marginTop:"16px"}}>Save Profile</button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function RestrictedAdminCard({ onUnlock, onBack }) {
+  return (
+    <div className="content">
+      <section className="card restricted-card">
+        <div className="restricted-content">
+          <div className="restricted-shield">🔒</div>
+          <h2>Admin Panel Restricted</h2>
+          <p>This panel is restricted to authorized team members chosen in Users &amp; Roles. Please verify your identity with the Admin PIN to access collection controls.</p>
+          <div className="restricted-actions">
+            <button type="button" className="outline-btn" onClick={onBack}>← Return to Dashboard</button>
+            <button type="button" className="green-btn" onClick={onUnlock}>🔓 Enter Admin PIN</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function PinModal({ onClose, onUnlock, users }) {
+  const [pin, setPin] = useState("");
+  const [err, setErr] = useState("");
+  const [selectedUser, setSelectedUser] = useState(() => {
+    const u = users ? users.find(x => x.hasAdminAccess) : null;
+    return u ? u.name : "";
+  });
+
+  const handleSubmit = (e) => {
+    if (e) e.preventDefault();
+    if (!pin.trim()) {
+      setErr("Please enter the Admin PIN.");
+      return;
+    }
+    const ok = onUnlock(pin.trim());
+    if (ok) {
+      onClose();
+    } else {
+      setErr("Incorrect PIN. (Default PIN: 1234)");
+      setPin("");
+    }
+  };
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal-box pin-modal-box" onClick={e=>e.stopPropagation()}>
+        <div className="modal-header">
+          <div className="pin-header-title">
+            <span className="pin-shield-icon">🛡️</span>
+            <div>
+              <h3>Admin Access Verification</h3>
+              <small>Enter PIN to unlock Admin Panel</small>
+            </div>
+          </div>
+          <button className="modal-close" onClick={onClose} type="button">✕</button>
+        </div>
+        <form onSubmit={handleSubmit}>
+          <div className="modal-body pin-modal-body">
+            <div className="pin-authorized-info">
+              <span className="pin-info-icon">ℹ️</span>
+              <div>
+                <b>Restricted to Authorized Personnel</b>
+                <p>Configured in Users &amp; Roles. Default PIN is <code>1234</code>.</p>
+              </div>
+            </div>
+
+            {users && users.length > 0 && (
+              <label className="field">
+                <span>Authorized User Profile</span>
+                <select value={selectedUser} onChange={e=>setSelectedUser(e.target.value)}>
+                  {users.map(u => (
+                    <option key={u.id} value={u.name} disabled={!u.hasAdminAccess}>
+                      {u.name} ({u.role}) — {u.hasAdminAccess ? "✓ Authorized" : "✕ Restricted"}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+
+            <label className="field">
+              <span>Security PIN Code</span>
+              <input
+                type="password"
+                autoFocus
+                maxLength={12}
+                placeholder="Enter PIN (e.g. 1234)"
+                value={pin}
+                onChange={e => { setPin(e.target.value); setErr(""); }}
+                className="pin-input"
+              />
+            </label>
+            {err && <p className="modal-err pin-err">{err}</p>}
+          </div>
+          <div className="modal-footer">
+            <button type="button" className="outline-btn" onClick={onClose}>Cancel</button>
+            <button type="submit" className="green-btn pin-submit-btn">🔓 Unlock Panel</button>
+          </div>
+        </form>
       </div>
-      <button className="green-btn">Save Changes</button>
-    </section></div>
+    </div>
   );
 }
 
