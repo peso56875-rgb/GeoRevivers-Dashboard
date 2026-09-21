@@ -13,12 +13,20 @@ const MONTH_NAMES = [
   "January","February","March","April","May","June",
   "July","August","September","October","November","December",
 ];
+const UNIVERSITY_CENTER = { lat: 31.4425975, lng: 31.4938895 };
 const DEFAULT_POINTS = [
-  { id:1, name:"موقع الإنشاءات الجديد", city:"القاهرة الجديدة", status:"Active" },
-  { id:2, name:"المستودع الرئيسي",       city:"القاهرة",         status:"Active" },
-  { id:3, name:"المدينة الجامعية",        city:"الجيزة",          status:"Active" },
-  { id:4, name:"الورشة المركزية",         city:"العاشر من رمضان", status:"Active" },
-  { id:5, name:"مبنى الهندسة",            city:"الإسكندرية",     status:"Active" },
+  { id:1,  name:"Faculty of Medicine",                city:"Delta University · Gamasa", status:"Active", x:45, y:24 },
+  { id:2,  name:"Faculty of Oral & Dental Medicine",  city:"Delta University · Gamasa", status:"Active", x:57, y:31 },
+  { id:3,  name:"Faculty of Pharmacy",                city:"Delta University · Gamasa", status:"Active", x:69, y:39 },
+  { id:4,  name:"Faculty of Physical Therapy",        city:"Delta University · Gamasa", status:"Active", x:37, y:42 },
+  { id:5,  name:"Faculty of Applied Health Sciences", city:"Delta University · Gamasa", status:"Active", x:50, y:52 },
+  { id:6,  name:"Faculty of Engineering",             city:"Delta University · Gamasa", status:"Active", x:64, y:57 },
+  { id:7,  name:"Faculty of Artificial Intelligence", city:"Delta University · Gamasa", status:"Active", x:76, y:49 },
+  { id:8,  name:"Faculty of Business Administration", city:"Delta University · Gamasa", status:"Active", x:30, y:60 },
+  { id:9,  name:"Faculty of Arts",                    city:"Delta University · Gamasa", status:"Active", x:42, y:70 },
+  { id:10, name:"Faculty of Nursing",                 city:"Delta University · Gamasa", status:"Active", x:56, y:76 },
+  { id:11, name:"Faculty of Veterinary Medicine",     city:"Delta University · Gamasa", status:"Active", x:70, y:69 },
+  { id:12, name:"Faculty of Energy Engineering",      city:"Delta University · Gamasa", status:"Active", x:82, y:62 },
 ];
 const DEFAULT_USERS = [
   { id:1, name:"Supervisor", role:"Supervisor", email:"supervisor@georevivers.com", status:"Active" },
@@ -28,7 +36,7 @@ const DEFAULT_USERS = [
 ];
 
 function App() {
-  const [page, setPage] = useState("dashboard");
+  const [page, setPage] = useState("welcome");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [records, setRecords] = useState(() => {
     try {
@@ -42,7 +50,7 @@ function App() {
     return DEFAULT_WASTE_TYPES;
   });
   const [points, setPoints] = useState(() => {
-    try { const s = localStorage.getItem("gr_points"); if (s) return JSON.parse(s); } catch {}
+    try { const s = localStorage.getItem("gr_delta_faculty_points_v1"); if (s) return JSON.parse(s); } catch {}
     return DEFAULT_POINTS;
   });
   const [users, setUsers] = useState(() => {
@@ -52,7 +60,7 @@ function App() {
 
   useEffect(() => { localStorage.setItem("georevivers_records_v3", JSON.stringify(records)); }, [records]);
   useEffect(() => { localStorage.setItem("gr_waste_types", JSON.stringify(wasteTypes)); }, [wasteTypes]);
-  useEffect(() => { localStorage.setItem("gr_points", JSON.stringify(points)); }, [points]);
+  useEffect(() => { localStorage.setItem("gr_delta_faculty_points_v1", JSON.stringify(points)); }, [points]);
   useEffect(() => { localStorage.setItem("gr_users", JSON.stringify(users)); }, [users]);
   useEffect(() => {
     const fn = (e) => { if (e.key === "Escape") setSidebarOpen(false); };
@@ -69,11 +77,15 @@ function App() {
   const addUser    = (u) => setUsers(p => [...p, { ...u, id: Date.now() }]);
   const removeUser = (id) => { if (window.confirm("Delete this user?")) setUsers(p => p.filter(x => x.id !== id)); };
 
+  if (page === "welcome") {
+    return <WelcomePage onEnter={() => setPage("dashboard")} onExploreMap={() => setPage("points")} />;
+  }
+
   return (
     <div className="app-shell">
       <Sidebar page={page} setPage={setPage} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <main className="main">
-        <Topbar page={page} setPage={setPage} onToggleMenu={() => setSidebarOpen(p => !p)} isMenuOpen={sidebarOpen} />
+        <Topbar setPage={setPage} onToggleMenu={() => setSidebarOpen(p => !p)} isMenuOpen={sidebarOpen} />
         {page==="dashboard"  && <Dashboard  records={records} setPage={setPage} wasteTypes={wasteTypes} />}
         {page==="records"    && <WasteRecords records={records} removeRecord={removeRecord} setPage={setPage} />}
         {page==="add"        && <AddRecord addRecord={addRecord} wasteTypes={wasteTypes} points={points} />}
@@ -87,9 +99,71 @@ function App() {
   );
 }
 
+function WelcomePage({ onEnter, onExploreMap }) {
+  return (
+    <main className="welcome-page">
+      <div className="welcome-orbit orbit-one" aria-hidden="true" />
+      <div className="welcome-orbit orbit-two" aria-hidden="true" />
+      <nav className="welcome-nav" aria-label="Welcome navigation">
+        <button className="welcome-brand" type="button" aria-label="GeoRevivers home">
+          <img src="/georevivers-logo.jpeg" alt="GeoRevivers" />
+        </button>
+        <div className="welcome-nav-actions">
+          <button type="button" className="welcome-link" onClick={onExploreMap}>Campus points</button>
+          <button type="button" className="welcome-nav-cta" onClick={onEnter}>Open dashboard</button>
+        </div>
+      </nav>
+
+      <section className="welcome-hero">
+        <div className="welcome-copy">
+          <span className="eyebrow"><i /> Smart campus waste intelligence</span>
+          <h1>Reviving resources.<br /><em>Restoring tomorrow.</em></h1>
+          <p>GeoRevivers turns every collection point into actionable environmental insight—helping Delta University build a cleaner, more circular campus.</p>
+          <div className="welcome-actions">
+            <button type="button" className="welcome-primary" onClick={onEnter}>
+              Enter the dashboard <span aria-hidden="true">→</span>
+            </button>
+            <button type="button" className="welcome-secondary" onClick={onExploreMap}>
+              Explore campus map
+            </button>
+          </div>
+          <div className="welcome-trust">
+            <div><strong>12</strong><span>Faculty collection points</span></div>
+            <div><strong>24/7</strong><span>Environmental visibility</span></div>
+            <div><strong>1</strong><span>Connected green campus</span></div>
+          </div>
+        </div>
+
+        <div className="welcome-visual" aria-label="GeoRevivers circular campus illustration">
+          <div className="visual-grid" aria-hidden="true" />
+          <div className="eco-disc">
+            <div className="eco-disc-inner">
+              <svg viewBox="0 0 160 160" role="img" aria-label="Circular recycling symbol">
+                <path d="M80 24c23 0 43 14 52 34l-16 7 31 17 4-35-14 7C126 27 105 10 80 10 53 10 30 27 20 51l14 6C42 38 59 24 80 24Z" />
+                <path d="M128 94c-7 22-25 38-47 41l-2-18-22 28 30 20-3-15c27-5 49-24 58-49l-14-7Z" />
+                <path d="M43 105c-15-18-17-42-7-61l16 8L38 19 3 31l14 7C5 64 9 94 28 116c17 20 44 29 68 24l-3-15c-18 4-38-3-50-20Z" />
+              </svg>
+              <span>Geo</span><b>Revivers</b>
+            </div>
+          </div>
+          <div className="floating-card impact-card"><span>Campus impact</span><strong>Cleaner by design</strong><i className="mini-line" /></div>
+          <div className="floating-card location-card"><span className="location-dot" /><div><strong>Delta University</strong><small>Gamasa, Egypt</small></div></div>
+          <div className="leaf-shape leaf-a" aria-hidden="true" />
+          <div className="leaf-shape leaf-b" aria-hidden="true" />
+        </div>
+      </section>
+
+      <footer className="welcome-footer">
+        <span>GeoRevivers Environmental Management System</span>
+        <span>Delta University for Science &amp; Technology · Gamasa</span>
+      </footer>
+    </main>
+  );
+}
+
 function Sidebar({ page, setPage, isOpen, onClose }) {
   const items = [
-    ["dashboard","⌂","Dashboard"],["records","▤","Waste Records"],
+    ["welcome","←","Welcome"],["dashboard","⌂","Dashboard"],["records","▤","Waste Records"],
     ["analytics","◔","Analytics & Reports"],["categories","◈","Waste Categories"],
     ["points","⌖","Collection Points"],["add","+","Admin Panel"],
     ["users","♙","Users & Roles"],["settings","⚙","Settings"],
@@ -118,7 +192,7 @@ function Sidebar({ page, setPage, isOpen, onClose }) {
   );
 }
 
-function Topbar({ page, setPage, onToggleMenu, isMenuOpen }) {
+function Topbar({ setPage, onToggleMenu, isMenuOpen }) {
   return (
     <header className="topbar">
       <div className="topbar-brand" onClick={() => setPage && setPage("dashboard")} role="button" tabIndex={0} title="GeoRevivers - Home">
@@ -482,11 +556,19 @@ function CollectionPoints({ points, addPoint, removePoint }) {
           {!points.length && <p style={{textAlign:"center",padding:"20px",color:"#aaa"}}>No points found.</p>}
         </section>
         <section className="card map-card">
-          <div className="fake-map">
-            <div className="map-grid" />
-            {points.map((p,i)=><span key={p.id} className="map-pin" style={{left:`${18+i*14}%`,top:`${25+(i%3)*20}%`}}>⌖</span>)}
-            <div className="map-label">Collection Points Map</div>
+          <div className="campus-map">
+            <iframe
+              title="Delta University campus map"
+              src={`https://www.openstreetmap.org/export/embed.html?bbox=${UNIVERSITY_CENTER.lng-0.006}%2C${UNIVERSITY_CENTER.lat-0.004}%2C${UNIVERSITY_CENTER.lng+0.006}%2C${UNIVERSITY_CENTER.lat+0.004}&layer=mapnik&marker=${UNIVERSITY_CENTER.lat}%2C${UNIVERSITY_CENTER.lng}`}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+            <div className="campus-map-shade" aria-hidden="true" />
+            {points.map((p,i)=><button key={p.id} type="button" className="faculty-pin" style={{left:`${p.x ?? 25+(i%4)*17}%`,top:`${p.y ?? 25+Math.floor(i/4)*18}%`}} aria-label={p.name} title={p.name}><span>{i+1}</span></button>)}
+            <div className="map-label"><small>LIVE CAMPUS VIEW</small><strong>Delta University</strong><span>Gamasa · Dakahlia · Egypt</span></div>
+            <a className="map-external" href={`https://www.openstreetmap.org/?mlat=${UNIVERSITY_CENTER.lat}&mlon=${UNIVERSITY_CENTER.lng}#map=17/${UNIVERSITY_CENTER.lat}/${UNIVERSITY_CENTER.lng}`} target="_blank" rel="noreferrer">Open full map ↗</a>
           </div>
+          <div className="map-footer"><span><i /> Faculty-based collection network</span><b>{points.length} active points</b></div>
         </section>
       </div>
     </div>
