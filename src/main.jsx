@@ -92,12 +92,26 @@ function App() {
   const [records, setRecords] = useState(() => {
     try {
       const s = localStorage.getItem("georevivers_records_v4");
-      if (s) { const p = JSON.parse(s); if (Array.isArray(p) && p.length >= 20) return p; }
+      if (s) {
+        const p = JSON.parse(s);
+        if (Array.isArray(p) && p.length >= 20) {
+          return p.filter(r => !/steel|glass/i.test(r.type));
+        }
+      }
     } catch {}
-    return initialRecords;
+    return initialRecords.filter(r => !/steel|glass/i.test(r.type));
   });
   const [wasteTypes, setWasteTypes] = useState(() => {
-    try { const s = localStorage.getItem("gr_waste_types"); if (s) return JSON.parse(s); } catch {}
+    try {
+      const s = localStorage.getItem("gr_waste_types_v2");
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (Array.isArray(parsed) && parsed.length) {
+          const filtered = parsed.filter(t => !/steel|glass/i.test(t));
+          if (filtered.length) return filtered;
+        }
+      }
+    } catch {}
     return DEFAULT_WASTE_TYPES;
   });
   const [points, setPoints] = useState(() => {
@@ -122,8 +136,11 @@ function App() {
 
   useEffect(() => { localStorage.setItem("gr_admin_pin", adminPin); }, [adminPin]);
   useEffect(() => { localStorage.setItem("gr_admin_unlocked", String(isAdminUnlocked)); }, [isAdminUnlocked]);
-  useEffect(() => { localStorage.setItem("georevivers_records_v4", JSON.stringify(records)); }, [records]);
-  useEffect(() => { localStorage.setItem("gr_waste_types", JSON.stringify(wasteTypes)); }, [wasteTypes]);
+  useEffect(() => { localStorage.setItem("georevivers_records_v4", JSON.stringify(records.filter(r => !/steel|glass/i.test(r.type)))); }, [records]);
+  useEffect(() => {
+    try { localStorage.removeItem("gr_waste_types"); } catch {}
+    localStorage.setItem("gr_waste_types_v2", JSON.stringify(wasteTypes.filter(t => !/steel|glass/i.test(t))));
+  }, [wasteTypes]);
   useEffect(() => { localStorage.setItem("gr_delta_faculty_points_v2", JSON.stringify(points)); }, [points]);
   useEffect(() => { localStorage.setItem("gr_users", JSON.stringify(users)); }, [users]);
   useEffect(() => {
@@ -136,9 +153,15 @@ function App() {
   const unlockAdmin = (pin) => pin === adminPin;
   const lockAdmin = () => { setIsAdminUnlocked(false); if (page === "add") setPage("dashboard"); };
   const toggleUserAdminAccess = (id) => setUsers(prev => prev.map(u => u.id === id ? { ...u, hasAdminAccess: !u.hasAdminAccess } : u));
-  const addRecord = (r) => setRecords(p => [{ ...r, id: Date.now(), addedBy: "Admin" }, ...p]);
+  const addRecord = (r) => {
+    if (!r || /steel|glass/i.test(r.type)) return;
+    setRecords(p => [{ ...r, id: Date.now(), addedBy: "Admin" }, ...p]);
+  };
   const removeRecord = (id) => { if (window.confirm("Delete this waste record?")) setRecords(p => p.filter(r => r.id !== id)); };
-  const addWasteType = (t) => setWasteTypes(p => [...p, t]);
+  const addWasteType = (t) => {
+    if (!t || /steel|glass/i.test(t)) return;
+    setWasteTypes(p => [...p.filter(x => !/steel|glass/i.test(x)), t]);
+  };
   const removeWasteType = (t) => { if (window.confirm(`Delete "${t}"?`)) setWasteTypes(p => p.filter(x => x !== t)); };
   const addPoint = (pt) => setPoints(p => [...p, { ...pt, id: Date.now() }]);
   const removePoint = (id) => { if (window.confirm("Delete this point?")) setPoints(p => p.filter(x => x.id !== id)); };
@@ -815,6 +838,7 @@ function Categories({ records, wasteTypes, addWasteType, removeWasteType }) {
   const add = () => {
     const t = name.trim();
     if (!t) { setErr("Category name is required."); return; }
+    if (/steel|glass/i.test(t)) { setErr("This category is not supported."); return; }
     if (wasteTypes.includes(t)) { setErr("Already exists."); return; }
     addWasteType(t); close();
   };
