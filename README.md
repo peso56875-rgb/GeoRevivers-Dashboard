@@ -1,33 +1,40 @@
 # GeoRevivers Dashboard
 
-React + Vite dashboard based on the GeoRevivers logo and blue/green visual identity.
+A cinematic operations dashboard for GeoRevivers — sustainable ground improvement at Delta University for Science & Technology, Gamasa.
+
+The interface was rebuilt as a full visual system (aurora landing, command overview, live ledger, analytics, faculty network) without changing the underlying dataset, storage keys, or admin workflow.
 
 ## Included pages
-- Dashboard Overview
-- Waste Records
-- Admin Panel / Add Waste Record
-- Analytics & Reports
-- Waste Categories
-- Collection Points
-- Users & Roles
-- Settings
+
+- Welcome / brand landing
+- Dashboard overview
+- Waste records (search + pagination)
+- Admin panel / add waste record (PIN protected)
+- Analytics & reports
+- Waste categories
+- Collection points + campus map
+- Users, roles, and settings
 
 ## Waste categories
+
+- Plastic
 - Crushed Ceramic
 - Crushed Concrete
 - Crushed Asphalt
-- Crushed Glass
-- Steel
-- Plastic
+
+Additional categories can be added from the categories page and are stored locally.
 
 ## Admin record fields
-- Date (Day / Month / Year)
-- Waste Type
-- Quantity (Ton)
-- Collection Point
-- Condition
 
-Records are saved to browser `localStorage` for the prototype, so refreshing the page keeps the data.
+- Date (day / month / year)
+- Waste type
+- Quantity (ton)
+- Collection point
+- Condition
+- Collection time
+- Notes
+
+Records persist in browser `localStorage`, so a refresh keeps the data. The seeded dataset is the 2026 Delta University collection ledger (3,515 records).
 
 ## Run locally
 
@@ -42,4 +49,4 @@ npm run dev
 npm run build
 ```
 
-Vercel will detect Vite automatically. The output directory is `dist`.
+Vercel detects Vite automatically. The output directory is `dist`.
