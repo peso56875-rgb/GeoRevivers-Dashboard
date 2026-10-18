@@ -1603,6 +1603,7 @@ a {
   color: var(--primary);
   background: linear-gradient(135deg, #3b5bf5 0%, #10b981 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -1646,82 +1647,385 @@ a {
   font-weight: 600;
 }
 
-/* Welcome Visual Column (Mini Dashboard Card Preview) */
+/* ==========================================================================
+   Welcome Page: Hero Emblem Pedestal & Floating Cards
+   ========================================================================== */
+
 .welcome-visual-col {
   position: relative;
   display: flex;
   justify-content: center;
+  align-items: center;
+  min-height: 480px;
 }
 
-.preview-dashboard-mockup {
-  background: #ffffff;
-  border-radius: var(--radius-xl);
-  box-shadow: 0 30px 60px -12px rgba(15, 23, 42, 0.16), 0 10px 24px -6px rgba(15, 23, 42, 0.08);
-  border: 1px solid #e2e8f0;
-  padding: 24px;
+.welcome-emblem-wrap {
+  position: relative;
   width: 100%;
-  max-width: 500px;
+  max-width: 440px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Central Emblem Pedestal Card */
+.emblem-pedestal-card {
+  background: #ffffff;
+  border-radius: 28px;
+  box-shadow: 0 25px 60px -10px rgba(15, 23, 42, 0.12), 0 10px 24px -6px rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  padding: 32px 28px 24px;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  align-items: center;
+  position: relative;
+  z-index: 3;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+
+.emblem-pedestal-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 32px 70px -10px rgba(15, 23, 42, 0.16), 0 12px 28px -6px rgba(15, 23, 42, 0.08);
+}
+
+.emblem-glow-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(59, 91, 245, 0.16) 0%, rgba(16, 185, 129, 0.08) 50%, transparent 75%);
+  filter: blur(35px);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* 1. Original GeoRevivers Logo */
+.original-logo-frame {
+  width: 220px;
+  height: 220px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 24px -4px rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--border-light);
+  margin-bottom: 20px;
   position: relative;
 }
 
-.mockup-top-card {
-  background: var(--primary-gradient);
-  border-radius: var(--radius-md);
-  padding: 20px;
-  color: #ffffff;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.original-georevivers-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
 }
 
-.mockup-rings-card {
-  background: #f8fafc;
-  border-radius: var(--radius-md);
-  padding: 16px;
-  border: 1px solid var(--border-light);
+.emblem-pedestal-card:hover .original-georevivers-logo {
+  transform: scale(1.04);
+}
+
+/* 2. Delta University Logo nestled directly beneath */
+.university-sub-badge {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 14px;
+  padding: 12px 18px;
+  border-radius: var(--radius-md);
+  background: #f8fafc;
+  border: 1px solid var(--border-light);
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
 }
 
-.mockup-floating-badge {
+.university-sub-badge:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+
+.university-sub-logo {
+  height: 48px;
+  width: auto;
+  max-width: 52px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.university-sub-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.university-sub-text strong {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.25;
+}
+
+.university-sub-text small {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* Floating Satellite Orbit Cards */
+.floating-orbit-card {
   position: absolute;
   background: #ffffff;
-  border-radius: var(--radius-pill);
-  box-shadow: var(--shadow-hover);
-  border: 1px solid var(--border-light);
-  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  box-shadow: 0 16px 32px -4px rgba(15, 23, 42, 0.1), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+  border: 1px solid rgba(226, 232, 240, 0.9);
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  font-weight: 700;
+  gap: 10px;
   z-index: 5;
+  white-space: nowrap;
+  animation: floatOrbit 4s ease-in-out infinite alternate;
 }
 
-.badge-float-1 {
-  top: -18px;
-  right: -20px;
-  color: var(--emerald-deep);
+@keyframes floatOrbit {
+  from { transform: translateY(0); }
+  to { transform: translateY(-8px); }
 }
 
-.badge-float-2 {
-  bottom: -20px;
+.floating-orbit-card small {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.floating-orbit-card strong {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--text-main);
+  font-family: var(--font-display);
+}
+
+.orbit-icon-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.orbit-icon-circle.green { background: #dcfce7; color: #15803d; }
+.orbit-icon-circle.blue { background: #e0f2fe; color: #0369a1; }
+.orbit-icon-circle.purple { background: #ede9fe; color: #6d28d9; }
+.orbit-icon-circle.amber { background: #fef3c7; color: #b45309; }
+
+.orbit-card-1 {
+  top: -16px;
+  left: -24px;
+  animation-delay: 0s;
+}
+
+.orbit-card-2 {
+  top: 40px;
+  right: -32px;
+  animation-delay: 1.2s;
+}
+
+.orbit-card-3 {
+  bottom: -18px;
   left: -20px;
+  animation-delay: 2.2s;
+}
+
+/* ==========================================================================
+   Welcome Page: Additional Rich Sections (Materials & Workflow)
+   ========================================================================== */
+
+.welcome-sections-wrap {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 60px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+  z-index: 10;
+  width: 100%;
+}
+
+.welcome-section-header {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto 36px;
+}
+
+.welcome-section-header span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #dbeafe;
+  padding: 5px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 11.5px;
+  font-weight: 700;
   color: var(--primary);
+  margin-bottom: 12px;
+}
+
+.welcome-section-header h2 {
+  margin: 0 0 10px;
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.025em;
+  font-family: var(--font-display);
+}
+
+.welcome-section-header p {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+/* Workflow 3-Step Cards */
+.welcome-workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.workflow-card {
+  background: #ffffff;
+  border-radius: var(--radius-xl);
+  padding: 32px 28px;
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.workflow-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-hover);
+}
+
+.workflow-step-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--primary-light);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 16px;
+  font-family: var(--font-display);
+}
+
+.workflow-card h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-main);
+  font-family: var(--font-display);
+}
+
+.workflow-card p {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* Welcome Bottom Call to Action Banner */
+.welcome-cta-banner {
+  background: var(--primary-gradient);
+  border-radius: 28px;
+  padding: 50px 60px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  box-shadow: 0 25px 50px -12px rgba(59, 91, 245, 0.45);
+  position: relative;
+  overflow: hidden;
+}
+
+.welcome-cta-banner::before {
+  content: "";
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 240px;
+  height: 240px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.cta-banner-text h2 {
+  margin: 0 0 8px;
+  font-size: 30px;
+  font-weight: 800;
+  font-family: var(--font-display);
+}
+
+.cta-banner-text p {
+  margin: 0;
+  font-size: 15px;
+  opacity: 0.9;
+  max-width: 520px;
+  line-height: 1.5;
+}
+
+.cta-banner-btn {
+  background: #ffffff;
+  color: var(--primary);
+  padding: 15px 30px;
+  border-radius: var(--radius-pill);
+  font-size: 14.5px;
+  font-weight: 800;
+  border: 0;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.cta-banner-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.2);
 }
 
 .welcome-footer {
-  padding: 20px 60px;
+  padding: 24px 60px;
   text-align: center;
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--text-muted);
-  border-top: 1px solid rgba(226, 232, 240, 0.7);
+  border-top: 1px solid rgba(226, 232, 240, 0.8);
   z-index: 10;
+  background: #ffffff;
 }
 
 /* ==========================================================================
@@ -1735,9 +2039,21 @@ a {
   .welcome-hero-container {
     grid-template-columns: 1fr;
     padding: 30px;
+    gap: 40px;
   }
-  .preview-dashboard-mockup {
-    max-width: 100%;
+  .welcome-sections-wrap {
+    padding: 0 30px 60px;
+  }
+  .welcome-workflow-grid {
+    grid-template-columns: 1fr;
+  }
+  .welcome-cta-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 36px 30px;
+  }
+  .floating-orbit-card {
+    display: none;
   }
 }
 
@@ -1770,5 +2086,12 @@ a {
   .welcome-metrics-strip {
     flex-wrap: wrap;
     gap: 20px;
+  }
+  .emblem-pedestal-card {
+    padding: 20px 16px;
+  }
+  .original-logo-frame {
+    width: 180px;
+    height: 180px;
   }
 }

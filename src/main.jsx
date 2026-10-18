@@ -1651,61 +1651,165 @@ function WelcomePage({ onEnter, onExploreMap, records, wasteTypes }) {
           </div>
         </div>
 
-        {/* Right Visual: DealDeck Preview Card Mockup */}
+        {/* Right Visual: Original GeoRevivers Emblem + Delta University Logo Beneath */}
         <div className="welcome-visual-col">
-          <div className="preview-dashboard-mockup">
-            <span className="mockup-floating-badge badge-float-1">
-              <Check size={14} color="#10b981" /> 98.4% Circular Efficiency
-            </span>
-            <span className="mockup-floating-badge badge-float-2">
-              <Building2 size={14} color="#3b5bf5" /> Delta University · Gamasa
-            </span>
+          <div className="welcome-emblem-wrap">
+            {/* Ambient Background Glow */}
+            <div className="emblem-glow-ring" />
 
-            {/* Mockup Card 1: Blue Card */}
-            <div className="mockup-top-card">
+            {/* Orbit Card Top Left */}
+            <div className="floating-orbit-card orbit-card-1">
+              <div className="orbit-icon-circle green"><Sparkles size={16} /></div>
               <div>
-                <span style={{ fontSize: 11, opacity: 0.85, fontWeight: 700, textTransform: "uppercase" }}>Total Operations</span>
-                <strong style={{ display: "block", fontSize: 24, margin: "2px 0", fontFamily: "var(--font-display)" }}>
-                  {total.toFixed(2)} Ton
-                </strong>
-                <small style={{ opacity: 0.8 }}>Delta Campus 2026</small>
+                <small>Circular Impact</small>
+                <strong>98.4% Recovery Rate</strong>
               </div>
-              <span className="trend-pill" style={{ background: "rgba(255,255,255,0.25)", color: "#ffffff" }}>
-                +12.4%
-              </span>
             </div>
 
-            {/* Mockup Concentric Rings Area */}
-            <div className="mockup-rings-card">
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <svg width="68" height="68" viewBox="0 0 70 70">
-                  <circle cx="35" cy="35" r="28" fill="none" stroke="#e2e8f0" strokeWidth="6" />
-                  <circle cx="35" cy="35" r="20" fill="none" stroke="#e2e8f0" strokeWidth="6" />
-                  <circle cx="35" cy="35" r="28" fill="none" stroke="#3b5bf5" strokeWidth="6" strokeDasharray="175.9" strokeDashoffset="55" strokeLinecap="round" />
-                  <circle cx="35" cy="35" r="20" fill="none" stroke="#f97316" strokeWidth="6" strokeDasharray="125.6" strokeDashoffset="45" strokeLinecap="round" />
-                </svg>
-                <div>
-                  <strong style={{ fontSize: 16, display: "block", color: "var(--text-main)" }}>4 Materials</strong>
-                  <small style={{ color: "#64748b" }}>Plastic · Ceramic · Concrete · Asphalt</small>
+            {/* Orbit Card Top Right */}
+            <div className="floating-orbit-card orbit-card-2">
+              <div className="orbit-icon-circle blue"><Recycle size={16} /></div>
+              <div>
+                <small>Total Operations</small>
+                <strong>{total.toFixed(1)} Tonne Ledger</strong>
+              </div>
+            </div>
+
+            {/* Orbit Card Bottom Left */}
+            <div className="floating-orbit-card orbit-card-3">
+              <div className="orbit-icon-circle purple"><MapPin size={16} /></div>
+              <div>
+                <small>Campus Network</small>
+                <strong>14 Active Stations</strong>
+              </div>
+            </div>
+
+            {/* Centerpiece Pedestal Card */}
+            <div className="emblem-pedestal-card">
+              {/* 1. Original GeoRevivers Logo */}
+              <div className="original-logo-frame">
+                <img
+                  src="/georevivers-logo.jpeg"
+                  alt="GeoRevivers - Improve Soil · Redesign Ground"
+                  className="original-georevivers-logo"
+                />
+              </div>
+
+              {/* 2. University Logo nestled directly beneath */}
+              <div className="university-sub-badge">
+                <img
+                  src="/delta-university-logo.png"
+                  alt="Delta University for Science and Technology"
+                  className="university-sub-logo"
+                />
+                <div className="university-sub-text">
+                  <strong>Delta University</strong>
+                  <small>For Science &amp; Technology · Gamasa</small>
                 </div>
-              </div>
-              <span className="trend-pill positive">+5,34%</span>
-            </div>
-
-            {/* Small Materials list preview */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, fontSize: 12 }}>
-              <div style={{ background: "#f8fafc", padding: "8px 12px", borderRadius: 8, border: "1px solid #e2e8f0" }}>
-                <span style={{ color: "#64748b", display: "block", fontSize: 10, fontWeight: 700 }}>Crushed Concrete</span>
-                <strong style={{ color: "var(--text-main)" }}>512.4 Ton</strong>
-              </div>
-              <div style={{ background: "#f8fafc", padding: "8px 12px", borderRadius: 8, border: "1px solid #e2e8f0" }}>
-                <span style={{ color: "#64748b", display: "block", fontSize: 10, fontWeight: 700 }}>Crushed Ceramic</span>
-                <strong style={{ color: "var(--text-main)" }}>318.3 Ton</strong>
               </div>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Additional Rich Sections */}
+      <div className="welcome-sections-wrap">
+        {/* Section 1: The 4 Physical Materials with Real Photos */}
+        <section>
+          <div className="welcome-section-header">
+            <span><Layers size={13} /> Physical Materials Catalog</span>
+            <h2>Certified Ground Improvement Aggregates</h2>
+            <p>
+              Direct photographic documentation of the 4 verified byproduct streams converted into high-performance soil stabilization assets across Delta University.
+            </p>
+          </div>
+
+          <div className="material-cards-grid">
+            {wasteTypes.map((t) => {
+              const count = records.filter(r => r.type === t).length;
+              const tonsVal = records.filter(r => r.type === t).reduce((s, r) => s + Number(r.quantity || 0), 0);
+              const share = total > 0 ? ((tonsVal / total) * 100).toFixed(1) : 0;
+
+              return (
+                <article className="mat-photo-card" key={t}>
+                  <div className="mat-photo-wrap">
+                    {WASTE_IMAGES[t] && (
+                      <img src={WASTE_IMAGES[t]} alt={t} className="mat-photo-img" />
+                    )}
+                    <span className="mat-photo-badge">{share}% Share</span>
+                  </div>
+                  <div className="mat-photo-body">
+                    <h4 className="mat-photo-title">{t}</h4>
+                    <div className="mat-photo-stats">
+                      <div className="mat-stat-col">
+                        <strong>{tonsVal.toFixed(2)}</strong>
+                        <small>Tonnes</small>
+                      </div>
+                      <div className="mat-stat-col">
+                        <strong>{count}</strong>
+                        <small>Records</small>
+                      </div>
+                      <div className="mat-stat-col">
+                        <span className="trend-pill positive">Active</span>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Section 2: 3-Pillar Operations Workflow */}
+        <section>
+          <div className="welcome-section-header">
+            <span><Compass size={13} /> Methodology &amp; Engineering</span>
+            <h2>How GeoRevivers Closes the Campus Loop</h2>
+            <p>
+              From collection at university faculty points to certified sub-base stabilization on the Mediterranean coastal soil of Gamasa.
+            </p>
+          </div>
+
+          <div className="welcome-workflow-grid">
+            <div className="workflow-card">
+              <div className="workflow-step-badge">01</div>
+              <h3>Faculty Point Collection</h3>
+              <p>
+                Continuous tracking across 14 dedicated collection points spanning all faculties, labs, and coastal road maintenance zones.
+              </p>
+            </div>
+
+            <div className="workflow-card">
+              <div className="workflow-step-badge">02</div>
+              <h3>Laboratory Crushing &amp; Sizing</h3>
+              <p>
+                Mechanical crushing of ceramics, concrete, and asphalt at the Faculty of Engineering Materials Testing Lab into standardized aggregate fractions.
+              </p>
+            </div>
+
+            <div className="workflow-card">
+              <div className="workflow-step-badge">03</div>
+              <h3>Soil &amp; Sub-Base Revitalization</h3>
+              <p>
+                Direct geotechnical insertion for ground improvement, moisture mitigation, and pavement foundation stabilization across the campus.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 3: Bottom Call to Action Banner */}
+        <div className="welcome-cta-banner">
+          <div className="cta-banner-text">
+            <h2>Ready to inspect the live operation?</h2>
+            <p>
+              Access the complete DealDeck-styled command center with 3,515 verified Excel records, material flow trends, and faculty network analytics.
+            </p>
+          </div>
+          <button type="button" className="cta-banner-btn" onClick={onEnter}>
+            Enter Command Dashboard <ArrowRight size={18} />
+          </button>
+        </div>
+      </div>
 
       {/* Footer */}
       <footer className="welcome-footer">
