@@ -3,31 +3,44 @@ import { createRoot } from "react-dom/client";
 import "./styles.css";
 import { initialRecords } from "./data.js";
 
+/* ─── Constants ─── */
 const DEFAULT_WASTE_TYPES = [
-  "Crushed Ceramic","Crushed Concrete","Crushed Asphalt",
-  "Crushed Glass","Steel","Plastic",
+  "Plastic","Crushed Ceramic","Crushed Concrete","Crushed Asphalt",
 ];
-const CONDITIONS = ["Good", "Medium", "Poor"];
+const CONDITIONS = ["Collected waste", "Processed", "Pending"];
 const ROLES = ["Supervisor", "Operator", "Viewer", "Admin"];
 const MONTH_NAMES = [
   "January","February","March","April","May","June",
   "July","August","September","October","November","December",
 ];
 const UNIVERSITY_CENTER = { lat: 31.4425975, lng: 31.4938895 };
+
+/* ─── Waste Category Images ─── */
+const WASTE_IMAGES = {
+  "Plastic":           "/plastic.jpeg",
+  "Crushed Ceramic":   "/crushed-ceramic.jpeg",
+  "Crushed Concrete":  "/crushed-concrete.jpeg",
+  "Crushed Asphalt":   "/crushed-asphalt.jpeg",
+};
+
+/* ─── Collection Points from Dataset ─── */
 const DEFAULT_POINTS = [
-  { id:1,  name:"Faculty of Medicine",                city:"Delta University · Gamasa", status:"Active", x:45, y:24 },
-  { id:2,  name:"Faculty of Oral & Dental Medicine",  city:"Delta University · Gamasa", status:"Active", x:57, y:31 },
-  { id:3,  name:"Faculty of Pharmacy",                city:"Delta University · Gamasa", status:"Active", x:69, y:39 },
-  { id:4,  name:"Faculty of Physical Therapy",        city:"Delta University · Gamasa", status:"Active", x:37, y:42 },
-  { id:5,  name:"Faculty of Applied Health Sciences", city:"Delta University · Gamasa", status:"Active", x:50, y:52 },
-  { id:6,  name:"Faculty of Engineering",             city:"Delta University · Gamasa", status:"Active", x:64, y:57 },
-  { id:7,  name:"Faculty of Artificial Intelligence", city:"Delta University · Gamasa", status:"Active", x:76, y:49 },
-  { id:8,  name:"Faculty of Business Administration", city:"Delta University · Gamasa", status:"Active", x:30, y:60 },
-  { id:9,  name:"Faculty of Arts",                    city:"Delta University · Gamasa", status:"Active", x:42, y:70 },
-  { id:10, name:"Faculty of Nursing",                 city:"Delta University · Gamasa", status:"Active", x:56, y:76 },
-  { id:11, name:"Faculty of Veterinary Medicine",     city:"Delta University · Gamasa", status:"Active", x:70, y:69 },
-  { id:12, name:"Faculty of Energy Engineering",      city:"Delta University · Gamasa", status:"Active", x:82, y:62 },
+  { id:1,  name:"Faculty of Applied Health Sciences", fullName:"Faculty of Applied Health Sciences - Delta University, Gamasa", city:"Delta University · Gamasa", status:"Active", x:45, y:24 },
+  { id:2,  name:"Faculty of Artificial Intelligence", fullName:"Faculty of Artificial Intelligence - Delta University, Gamasa", city:"Delta University · Gamasa", status:"Active", x:57, y:31 },
+  { id:3,  name:"Faculty of Arts",                    fullName:"Faculty of Arts - Delta University, Gamasa", city:"Delta University · Gamasa", status:"Active", x:69, y:39 },
+  { id:4,  name:"Faculty of Business Administration", fullName:"Faculty of Business Administration - Delta University, Gamasa", city:"Delta University · Gamasa", status:"Active", x:37, y:42 },
+  { id:5,  name:"Faculty of Energy Engineering",      fullName:"Faculty of Energy Engineering - Delta University, Gamasa", city:"Delta University · Gamasa", status:"Active", x:50, y:52 },
+  { id:6,  name:"Faculty of Engineering",             fullName:"Faculty of Engineering - Delta University, Gamasa", city:"Delta University · Gamasa", status:"Active", x:64, y:57 },
+  { id:7,  name:"Faculty of Medicine",                fullName:"Faculty of Medicine - Delta University, Gamasa", city:"Delta University · Gamasa", status:"Active", x:76, y:49 },
+  { id:8,  name:"Faculty of Nursing",                 fullName:"Faculty of Nursing - Delta University, Gamasa", city:"Delta University · Gamasa", status:"Active", x:30, y:60 },
+  { id:9,  name:"Faculty of Oral & Dental Medicine",  fullName:"Faculty of Oral & Dental Medicine - Delta University, Gamasa", city:"Delta University · Gamasa", status:"Active", x:42, y:70 },
+  { id:10, name:"Faculty of Pharmacy",                fullName:"Faculty of Pharmacy - Delta University, Gamasa", city:"Delta University · Gamasa", status:"Active", x:56, y:76 },
+  { id:11, name:"Faculty of Physical Therapy",        fullName:"Faculty of Physical Therapy - Delta University, Gamasa", city:"Delta University · Gamasa", status:"Active", x:70, y:69 },
+  { id:12, name:"Faculty of Veterinary Medicine",     fullName:"Faculty of Veterinary Medicine - Delta University, Gamasa", city:"Delta University · Gamasa", status:"Active", x:82, y:62 },
+  { id:13, name:"Materials Testing Lab",              fullName:"Materials Testing Lab - Faculty of Engineering, Delta University, Gamasa", city:"Delta University · Gamasa", status:"Active", x:64, y:80 },
+  { id:14, name:"Road Breaking Collection Point",     fullName:"Road Breaking Collection Point", city:"Delta University · Gamasa", status:"Active", x:20, y:80 },
 ];
+
 const DEFAULT_USERS = [
   { id:1, name:"Supervisor", role:"Supervisor", email:"supervisor@georevivers.com", status:"Active", hasAdminAccess:true },
   { id:2, name:"Operator 1", role:"Operator",   email:"operator.1@georevivers.com", status:"Active", hasAdminAccess:false },
@@ -35,6 +48,9 @@ const DEFAULT_USERS = [
   { id:4, name:"Viewer",     role:"Viewer",     email:"viewer@georevivers.com",     status:"Inactive", hasAdminAccess:false },
 ];
 
+/* ══════════════════════════════════════════════════════════════
+   App
+   ══════════════════════════════════════════════════════════════ */
 function App() {
   const [page, setPage] = useState("welcome");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -49,7 +65,7 @@ function App() {
   });
   const [records, setRecords] = useState(() => {
     try {
-      const s = localStorage.getItem("georevivers_records_v3");
+      const s = localStorage.getItem("georevivers_records_v4");
       if (s) { const p = JSON.parse(s); if (Array.isArray(p) && p.length >= 20) return p; }
     } catch {}
     return initialRecords;
@@ -59,7 +75,7 @@ function App() {
     return DEFAULT_WASTE_TYPES;
   });
   const [points, setPoints] = useState(() => {
-    try { const s = localStorage.getItem("gr_delta_faculty_points_v1"); if (s) return JSON.parse(s); } catch {}
+    try { const s = localStorage.getItem("gr_delta_faculty_points_v2"); if (s) return JSON.parse(s); } catch {}
     return DEFAULT_POINTS;
   });
   const [users, setUsers] = useState(() => {
@@ -80,9 +96,9 @@ function App() {
 
   useEffect(() => { localStorage.setItem("gr_admin_pin", adminPin); }, [adminPin]);
   useEffect(() => { localStorage.setItem("gr_admin_unlocked", String(isAdminUnlocked)); }, [isAdminUnlocked]);
-  useEffect(() => { localStorage.setItem("georevivers_records_v3", JSON.stringify(records)); }, [records]);
+  useEffect(() => { localStorage.setItem("georevivers_records_v4", JSON.stringify(records)); }, [records]);
   useEffect(() => { localStorage.setItem("gr_waste_types", JSON.stringify(wasteTypes)); }, [wasteTypes]);
-  useEffect(() => { localStorage.setItem("gr_delta_faculty_points_v1", JSON.stringify(points)); }, [points]);
+  useEffect(() => { localStorage.setItem("gr_delta_faculty_points_v2", JSON.stringify(points)); }, [points]);
   useEffect(() => { localStorage.setItem("gr_users", JSON.stringify(users)); }, [users]);
   useEffect(() => {
     const fn = (e) => { if (e.key === "Escape") setSidebarOpen(false); };
@@ -107,7 +123,7 @@ function App() {
     setUsers(prev => prev.map(u => u.id === id ? { ...u, hasAdminAccess: !u.hasAdminAccess } : u));
   };
 
-  const addRecord    = (r) => { setRecords(p => [{ ...r, id: Date.now(), addedBy:"Supervisor" }, ...p]); setPage("records"); };
+  const addRecord    = (r) => { setRecords(p => [{ ...r, id: Date.now(), addedBy:"Admin" }, ...p]); };
   const removeRecord = (id) => { if (window.confirm("Delete this waste record?")) setRecords(p => p.filter(r => r.id !== id)); };
   const addWasteType    = (t) => setWasteTypes(p => [...p, t]);
   const removeWasteType = (t) => { if (window.confirm(`Delete "${t}"?`)) setWasteTypes(p => p.filter(x => x !== t)); };
@@ -141,7 +157,7 @@ function App() {
         />
         {page==="dashboard"  && <Dashboard records={records} setPage={setPage} wasteTypes={wasteTypes} isAdminUnlocked={isAdminUnlocked} onOpenPinModal={()=>setShowPinModal(true)} />}
         {page==="records"    && <WasteRecords records={records} removeRecord={removeRecord} setPage={setPage} isAdminUnlocked={isAdminUnlocked} onOpenPinModal={()=>setShowPinModal(true)} />}
-        {page==="add"        && (isAdminUnlocked ? <AddRecord addRecord={addRecord} wasteTypes={wasteTypes} points={points} /> : <RestrictedAdminCard onUnlock={()=>setShowPinModal(true)} onBack={()=>setPage("dashboard")} />)}
+        {page==="add"        && (isAdminUnlocked ? <AddRecord addRecord={addRecord} wasteTypes={wasteTypes} points={points} setPage={setPage} /> : <RestrictedAdminCard onUnlock={()=>setShowPinModal(true)} onBack={()=>setPage("dashboard")} />)}
         {page==="analytics"  && <Analytics records={records} wasteTypes={wasteTypes} />}
         {page==="categories" && <Categories records={records} wasteTypes={wasteTypes} addWasteType={addWasteType} removeWasteType={removeWasteType} />}
         {page==="points"     && <CollectionPoints points={points} addPoint={addPoint} removePoint={removePoint} />}
@@ -169,6 +185,9 @@ function App() {
   );
 }
 
+/* ══════════════════════════════════════════════════════════════
+   Welcome Page
+   ══════════════════════════════════════════════════════════════ */
 function WelcomePage({ onEnter, onExploreMap }) {
   return (
     <main className="welcome-page">
@@ -198,9 +217,9 @@ function WelcomePage({ onEnter, onExploreMap }) {
             </button>
           </div>
           <div className="welcome-trust">
-            <div><strong>12</strong><span>Faculty collection points</span></div>
-            <div><strong>24/7</strong><span>Environmental visibility</span></div>
-            <div><strong>1</strong><span>Connected green campus</span></div>
+            <div><strong>14</strong><span>Collection points</span></div>
+            <div><strong>3,515</strong><span>Records tracked</span></div>
+            <div><strong>1,272.6</strong><span>Tons processed</span></div>
           </div>
         </div>
 
@@ -229,6 +248,9 @@ function WelcomePage({ onEnter, onExploreMap }) {
   );
 }
 
+/* ══════════════════════════════════════════════════════════════
+   Sidebar
+   ══════════════════════════════════════════════════════════════ */
 function Sidebar({ page, setPage, isOpen, onClose, isAdminUnlocked, onOpenPinModal }) {
   const items = [
     ["welcome","←","Welcome"],
@@ -286,6 +308,9 @@ function Sidebar({ page, setPage, isOpen, onClose, isAdminUnlocked, onOpenPinMod
   );
 }
 
+/* ══════════════════════════════════════════════════════════════
+   Topbar
+   ══════════════════════════════════════════════════════════════ */
 function Topbar({ setPage, onToggleMenu, isMenuOpen, isAdminUnlocked, onOpenPinModal, onLockAdmin }) {
   return (
     <header className="topbar">
@@ -329,6 +354,9 @@ function Topbar({ setPage, onToggleMenu, isMenuOpen, isAdminUnlocked, onOpenPinM
   );
 }
 
+/* ══════════════════════════════════════════════════════════════
+   Dashboard
+   ══════════════════════════════════════════════════════════════ */
 function Dashboard({ records, setPage, wasteTypes, isAdminUnlocked, onOpenPinModal }) {
   const [filterType, setFilterType]   = useState("");
   const [filterDay, setFilterDay]     = useState("");
@@ -370,10 +398,10 @@ function Dashboard({ records, setPage, wasteTypes, isAdminUnlocked, onOpenPinMod
   return (
     <div className="content">
       <div className="stats-grid">
-        <StatCard icon="♻" value={total.toFixed(2)} label="Total Waste (Ton)"    note={isFiltered?`Filtered (${filtered.length} records)`:"+12.5% vs last month"} theme="emerald" />
-        <StatCard icon="▤" value={filtered.length}   label="Total Records"        note={isFiltered?`of ${records.length} total`:"+8.7% vs last month"} theme="cyan" />
-        <StatCard icon="⌖" value={new Set(filtered.map(r=>r.point)).size} label="Collection Points" note="+6.3% vs last month" theme="amber" />
-        <StatCard icon="◈" value={new Set(filtered.map(r=>r.type)).size}  label="Active Categories" note="All categories" theme="indigo" />
+        <StatCard icon="♻" value={total.toFixed(2)} label="Total Waste (Ton)"    note={isFiltered?`Filtered (${filtered.length} records)`:`${records.length} total records`} theme="emerald" />
+        <StatCard icon="▤" value={filtered.length}   label="Total Records"        note={isFiltered?`of ${records.length} total`:"All time data"} theme="cyan" />
+        <StatCard icon="⌖" value={new Set(filtered.map(r=>r.point)).size} label="Collection Points" note="Active campus points" theme="amber" />
+        <StatCard icon="◈" value={new Set(filtered.map(r=>r.type)).size}  label="Active Categories" note="Material types tracked" theme="indigo" />
       </div>
       <div className="two-col">
         <section className="card">
@@ -437,6 +465,7 @@ function Dashboard({ records, setPage, wasteTypes, isAdminUnlocked, onOpenPinMod
   );
 }
 
+/* ── Stat Card ── */
 function StatCard({ icon, value, label, note, theme = "emerald" }) {
   return (
     <div className={`stat-card stat-${theme}`}>
@@ -455,6 +484,7 @@ function StatCard({ icon, value, label, note, theme = "emerald" }) {
   );
 }
 
+/* ── Donut ── */
 function Donut({ categories, total }) {
   const C = 2*Math.PI*50; let offset=0;
   return (
@@ -472,9 +502,10 @@ function Donut({ categories, total }) {
   );
 }
 
+/* ── Filter Bar ── */
 function FilterBar({ filterType, setFilterType, filterDay, setFilterDay, filterMonth, setFilterMonth, filterYear, setFilterYear, onApply, onReset, isFiltered, records=[], wasteTypes=[] }) {
   const years = useMemo(() => {
-    const s = new Set(["2026","2025","2024"]);
+    const s = new Set(["2026"]);
     records.forEach(r => r.date && s.add(r.date.split("-")[0]));
     return Array.from(s).sort((a,b)=>b-a);
   }, [records]);
@@ -492,6 +523,7 @@ function FilterBar({ filterType, setFilterType, filterDay, setFilterDay, filterM
   );
 }
 
+/* ── Select ── */
 function Select({ label, options, value, onChange }) {
   return (
     <label className="field">
@@ -504,24 +536,46 @@ function Select({ label, options, value, onChange }) {
   );
 }
 
+/* ══════════════════════════════════════════════════════════════
+   Waste Records
+   ══════════════════════════════════════════════════════════════ */
 function WasteRecords({ records, removeRecord, setPage, isAdminUnlocked, onOpenPinModal }) {
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const perPage = 25;
+  
   const filtered = records.filter(r=>`${r.type} ${r.point} ${r.condition} ${r.date}`.toLowerCase().includes(search.toLowerCase()));
+  const totalPages = Math.ceil(filtered.length / perPage);
+  const paged = filtered.slice((currentPage - 1) * perPage, currentPage * perPage);
+  
+  useEffect(() => { setCurrentPage(1); }, [search]);
+  
   return (
     <div className="content">
       <div className="page-toolbar">
         <input className="search" placeholder="Search records..." value={search} onChange={e=>setSearch(e.target.value)} />
+        <span className="record-count">{filtered.length} records</span>
         {isAdminUnlocked ? (
           <button className="green-btn" onClick={()=>setPage("add")}>＋ Add Record</button>
         ) : (
           <button type="button" className="outline-btn admin-prompt-btn" onClick={onOpenPinModal} title="Unlock Admin to add records">🔒 Add Record (Admin)</button>
         )}
       </div>
-      <section className="card table-card"><RecordsTable records={filtered} onDelete={isAdminUnlocked ? removeRecord : null} /></section>
+      <section className="card table-card">
+        <RecordsTable records={paged} onDelete={isAdminUnlocked ? removeRecord : null} />
+        {totalPages > 1 && (
+          <div className="pagination">
+            <button disabled={currentPage===1} onClick={()=>setCurrentPage(p=>p-1)} className="outline-btn">← Prev</button>
+            <span className="page-info">Page {currentPage} of {totalPages}</span>
+            <button disabled={currentPage===totalPages} onClick={()=>setCurrentPage(p=>p+1)} className="outline-btn">Next →</button>
+          </div>
+        )}
+      </section>
     </div>
   );
 }
 
+/* ── Records Table ── */
 function RecordsTable({ records, onDelete, compact=false }) {
   return (
     <div className="table-wrap">
@@ -542,10 +596,10 @@ function RecordsTable({ records, onDelete, compact=false }) {
             <tr key={r.id}>
               <td><span className="cell-date">{formatDate(r.date)}</span></td>
               <td><b className="cell-type">{r.type}</b></td>
-              <td><span className="cell-qty">{Number(r.quantity).toFixed(2)} <small>Ton</small></span></td>
-              <td><span className="cell-point">{r.point}</span></td>
+              <td><span className="cell-qty">{Number(r.quantity).toFixed(4)} <small>Ton</small></span></td>
+              <td><span className="cell-point">{(r.point || "").replace(" - Delta University, Gamasa","")}</span></td>
               <td>
-                <span className={`badge-pill ${r.condition.toLowerCase()}`}>
+                <span className={`badge-pill ${(r.condition||"").toLowerCase().replace(/\s+/g,"-")}`}>
                   <span className="badge-dot" />
                   {r.condition}
                 </span>
@@ -569,21 +623,42 @@ function RecordsTable({ records, onDelete, compact=false }) {
   );
 }
 
-function AddRecord({ addRecord, wasteTypes, points }) {
+/* ══════════════════════════════════════════════════════════════
+   Admin Panel - Add Record (Enhanced)
+   ══════════════════════════════════════════════════════════════ */
+function AddRecord({ addRecord, wasteTypes, points, setPage }) {
   const today = new Date().toISOString().slice(0,10);
-  const [form, setForm] = useState({ date:today, type:"", quantity:"", point:"", condition:"" });
+  const [form, setForm] = useState({ date:today, type:"", quantity:"", point:"", condition:"", time:"", notes:"" });
   const [saved, setSaved] = useState(false);
+  const [recentlyAdded, setRecentlyAdded] = useState([]);
   const update = (k,v) => setForm(f=>({...f,[k]:v}));
+  
   const submit = e => {
     e.preventDefault();
     if(!form.date||!form.type||!form.quantity||!form.point||!form.condition) return;
-    addRecord({...form, quantity:Number(form.quantity)});
+    const newRecord = {
+      ...form,
+      quantity: Number(form.quantity),
+      month: form.date.slice(0,7),
+    };
+    addRecord(newRecord);
+    setRecentlyAdded(prev => [{ ...newRecord, id: Date.now(), addedBy: "Admin" }, ...prev]);
     setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+    // Reset form but keep date
+    setForm(f => ({ date: f.date, type:"", quantity:"", point:"", condition:"", time:"", notes:"" }));
   };
+  
   return (
     <div className="content">
       <section className="card admin-card">
-        <div className="admin-intro"><h2>Add Waste Record</h2><p>Enter the collection data. The dashboard will update automatically after saving.</p></div>
+        <div className="admin-intro">
+          <div>
+            <h2>🛡️ Admin Panel — Add Waste Record</h2>
+            <p>Enter the collection data below. Records are added to the live dashboard immediately and persist across sessions.</p>
+          </div>
+          <button type="button" className="outline-btn" onClick={() => setPage("records")}>← View All Records</button>
+        </div>
         <form onSubmit={submit}>
           <div className="quick-entry">
             <Select label="Waste Type" options={wasteTypes} value={form.type} onChange={e=>update("type",e.target.value)} />
@@ -592,57 +667,121 @@ function AddRecord({ addRecord, wasteTypes, points }) {
             <Select label="Year" options={["2026","2027","2028","2029","2030"]} value={form.date.slice(0,4)} onChange={e=>update("date",`${e.target.value}-${form.date.slice(5)}`)} />
           </div>
           <div className="form-grid">
-            <label className="field"><span>Quantity (Ton)</span><input type="number" min="0" step="0.01" placeholder="Enter quantity" value={form.quantity} onChange={e=>update("quantity",e.target.value)} /></label>
-            <Select label="Collection Point" options={points.map(p=>p.name)} value={form.point} onChange={e=>update("point",e.target.value)} />
+            <label className="field"><span>Quantity (Ton)</span><input type="number" min="0" step="0.0001" placeholder="e.g. 0.0473" value={form.quantity} onChange={e=>update("quantity",e.target.value)} /></label>
+            <Select label="Collection Point" options={points.map(p=>p.fullName || p.name)} value={form.point} onChange={e=>update("point",e.target.value)} />
             <Select label="Condition" options={CONDITIONS} value={form.condition} onChange={e=>update("condition",e.target.value)} />
+            <label className="field"><span>Collection Time</span><input type="time" value={form.time} onChange={e=>update("time",e.target.value)} /></label>
+            <label className="field" style={{gridColumn:"1/-1"}}><span>Notes (Optional)</span><input placeholder="Any additional notes..." value={form.notes} onChange={e=>update("notes",e.target.value)} /></label>
           </div>
           <div className="form-actions">
-            <button type="reset" className="outline-btn" onClick={()=>setForm({date:today,type:"",quantity:"",point:"",condition:""})}>Clear</button>
-            <button type="submit" className="green-btn">✓ Save Record</button>
+            <button type="reset" className="outline-btn" onClick={()=>setForm({date:today,type:"",quantity:"",point:"",condition:"",time:"",notes:""})}>Clear</button>
+            <button type="submit" className="green-btn">✓ Save Record to Dashboard</button>
           </div>
-          {saved && <div className="success">Record saved successfully.</div>}
+          {saved && <div className="success">✓ Record saved successfully and added to the live dashboard!</div>}
         </form>
       </section>
+      
+      {/* Recently added records in this session */}
+      {recentlyAdded.length > 0 && (
+        <section className="card">
+          <div className="section-title"><h2>Recently Added in This Session</h2><span className="record-count">{recentlyAdded.length} records</span></div>
+          <RecordsTable records={recentlyAdded} compact />
+        </section>
+      )}
+      
       <section className="card category-mini">
-        <h2>Waste Categories</h2>
+        <h2>Available Waste Categories</h2>
         <div className="category-pills">{wasteTypes.map((x,i)=><span key={x} className={`pill p${i}`}>{x}</span>)}</div>
       </section>
     </div>
   );
 }
 
+/* ══════════════════════════════════════════════════════════════
+   Analytics
+   ══════════════════════════════════════════════════════════════ */
 function Analytics({ records, wasteTypes }) {
   const total = records.reduce((s,r)=>s+Number(r.quantity),0);
   const avg   = records.length ? total/records.length : 0;
   const byType= wasteTypes.map(type=>({type,value:records.filter(r=>r.type===type).reduce((s,r)=>s+Number(r.quantity),0)}));
   const max   = Math.max(...byType.map(x=>x.value),1);
+  
+  /* Monthly trend data */
+  const monthlyData = useMemo(() => {
+    const map = {};
+    records.forEach(r => {
+      const m = r.month || (r.date ? r.date.slice(0,7) : null);
+      if (!m) return;
+      if (!map[m]) map[m] = 0;
+      map[m] += Number(r.quantity);
+    });
+    return Object.entries(map).sort((a,b)=>a[0].localeCompare(b[0])).map(([month, value]) => ({ month, value }));
+  }, [records]);
+  
   return (
     <div className="content">
       <div className="stats-grid">
-        <StatCard icon="♻" value={total.toFixed(2)} label="Total Waste (Ton)"    note="+12.5% vs last month" theme="emerald" />
-        <StatCard icon="▤" value={records.length}    label="Total Records"        note="+8.7% vs last month" theme="cyan" />
-        <StatCard icon="◒" value={avg.toFixed(2)}    label="Avg. Quantity (Ton)"  note="+5.4% vs last month" theme="amber" />
-        <StatCard icon="⌖" value={new Set(records.map(r=>r.point)).size} label="Collection Points" note="+6.3% vs last month" theme="indigo" />
+        <StatCard icon="♻" value={total.toFixed(2)} label="Total Waste (Ton)"    note={`${records.length} records`} theme="emerald" />
+        <StatCard icon="▤" value={records.length}    label="Total Records"        note="Jan–Oct 2026" theme="cyan" />
+        <StatCard icon="◒" value={avg.toFixed(4)}    label="Avg. Quantity (Ton)"  note="Per record" theme="amber" />
+        <StatCard icon="⌖" value={new Set(records.map(r=>r.point)).size} label="Collection Points" note="Across campus" theme="indigo" />
       </div>
       <div className="two-col">
-        <section className="card"><div className="section-title"><h2>Waste Trend</h2><span>Quantity (Ton)</span></div><TrendChart records={records} /></section>
+        <section className="card">
+          <div className="section-title"><h2>Monthly Waste Trend</h2><span>Quantity (Ton)</span></div>
+          <MonthlyTrendChart data={monthlyData} />
+        </section>
         <section className="card">
           <div className="section-title"><h2>Waste by Type</h2><span>Quantity (Ton)</span></div>
           <div className="horizontal-bars">
-            {byType.map(x=><div className="hbar" key={x.type}><span>{x.type.replace("Crushed ","")}</span><div><i style={{width:`${(x.value/max)*100}%`}} /></div><b>{x.value.toFixed(1)}</b></div>)}
+            {byType.map(x=><div className="hbar" key={x.type}><span>{x.type}</span><div><i style={{width:`${(x.value/max)*100}%`}} /></div><b>{x.value.toFixed(2)}</b></div>)}
           </div>
         </section>
       </div>
+      
+      {/* Waste type breakdown with images */}
+      <section className="card">
+        <div className="section-title"><h2>Waste Category Breakdown</h2><span>With Material Images</span></div>
+        <div className="waste-image-grid">
+          {byType.map((x, i) => (
+            <div className="waste-image-card" key={x.type}>
+              {WASTE_IMAGES[x.type] && (
+                <div className="waste-img-wrap">
+                  <img src={WASTE_IMAGES[x.type]} alt={x.type} className="waste-cat-img" />
+                </div>
+              )}
+              <div className="waste-img-info">
+                <h3>{x.type}</h3>
+                <div className="waste-img-stats">
+                  <div><strong>{x.value.toFixed(2)}</strong><small>Total Tons</small></div>
+                  <div><strong>{total > 0 ? ((x.value / total) * 100).toFixed(1) : 0}%</strong><small>Share</small></div>
+                  <div><strong>{records.filter(r => r.type === x.type).length}</strong><small>Records</small></div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
 
-function TrendChart({ records }) {
-  const data=[...records].slice(0,10).reverse();
-  const max=Math.max(...data.map(r=>Number(r.quantity)),1);
-  return <div className="trend-chart">{data.map(r=><div className="trend-col" key={r.id}><span style={{height:`${(Number(r.quantity)/max)*150}px`}}></span><small>{new Date(r.date).getDate()}/{new Date(r.date).getMonth()+1}</small></div>)}</div>;
+/* ── Monthly Trend Chart ── */
+function MonthlyTrendChart({ data }) {
+  const max = Math.max(...data.map(d => d.value), 1);
+  return (
+    <div className="trend-chart">
+      {data.map(d => (
+        <div className="trend-col" key={d.month} title={`${d.month}: ${d.value.toFixed(2)} Ton`}>
+          <span style={{ height: `${(d.value / max) * 150}px` }}></span>
+          <small>{MONTH_NAMES[parseInt(d.month.split("-")[1], 10) - 1]?.slice(0,3) || d.month}</small>
+        </div>
+      ))}
+    </div>
+  );
 }
 
+/* ── Modal ── */
 function Modal({ title, onClose, children }) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -654,6 +793,9 @@ function Modal({ title, onClose, children }) {
   );
 }
 
+/* ══════════════════════════════════════════════════════════════
+   Categories (with images)
+   ══════════════════════════════════════════════════════════════ */
 function Categories({ records, wasteTypes, addWasteType, removeWasteType }) {
   const [show, setShow] = useState(false);
   const [name, setName] = useState("");
@@ -676,14 +818,53 @@ function Categories({ records, wasteTypes, addWasteType, removeWasteType }) {
         </div>
         <div className="modal-footer"><button className="outline-btn" onClick={close}>Cancel</button><button className="green-btn" onClick={add}>✓ Add Category</button></div>
       </Modal>}
+      
+      {/* Category cards with images */}
+      <div className="waste-image-grid" style={{marginBottom:"24px"}}>
+        {wasteTypes.map((t, i) => {
+          const count = records.filter(r => r.type === t).length;
+          const totalQty = records.filter(r => r.type === t).reduce((s, r) => s + Number(r.quantity), 0);
+          return (
+            <div className="waste-image-card" key={t}>
+              {WASTE_IMAGES[t] && (
+                <div className="waste-img-wrap">
+                  <img src={WASTE_IMAGES[t]} alt={t} className="waste-cat-img" />
+                </div>
+              )}
+              <div className="waste-img-info">
+                <h3>{t}</h3>
+                <div className="waste-img-stats">
+                  <div><strong>{totalQty.toFixed(2)}</strong><small>Tons</small></div>
+                  <div><strong>{count}</strong><small>Records</small></div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      
       <section className="card table-card">
         <div className="section-title"><h2>Waste Categories</h2><button className="green-btn" onClick={()=>setShow(true)}>＋ Add Category</button></div>
         <div className="table-wrap">
           <table className="modern-table">
-            <thead><tr><th>Category Name</th><th>Description</th><th>Default Unit</th><th>Records</th><th>Status</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Category Name</th><th>Description</th><th>Default Unit</th><th>Records</th><th>Total (Ton)</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody>
-              {wasteTypes.map(t=><tr key={t}><td><b>{t}</b></td><td>{t} waste material</td><td>Ton</td><td>{records.filter(r=>r.type===t).length}</td><td><span className="badge-pill good"><span className="badge-dot" />Active</span></td><td><button className="delete-btn" onClick={()=>removeWasteType(t)}>Delete</button></td></tr>)}
-              {!wasteTypes.length && <tr><td colSpan="6" className="empty">No categories.</td></tr>}
+              {wasteTypes.map(t => {
+                const count = records.filter(r => r.type === t).length;
+                const totalQty = records.filter(r => r.type === t).reduce((s, r) => s + Number(r.quantity), 0);
+                return (
+                  <tr key={t}>
+                    <td><b>{t}</b></td>
+                    <td>{t} waste material</td>
+                    <td>Ton</td>
+                    <td>{count}</td>
+                    <td><b>{totalQty.toFixed(2)}</b></td>
+                    <td><span className="badge-pill good"><span className="badge-dot" />Active</span></td>
+                    <td><button className="delete-btn" onClick={()=>removeWasteType(t)}>Delete</button></td>
+                  </tr>
+                );
+              })}
+              {!wasteTypes.length && <tr><td colSpan="7" className="empty">No categories.</td></tr>}
             </tbody>
           </table>
         </div>
@@ -692,6 +873,9 @@ function Categories({ records, wasteTypes, addWasteType, removeWasteType }) {
   );
 }
 
+/* ══════════════════════════════════════════════════════════════
+   Collection Points
+   ══════════════════════════════════════════════════════════════ */
 function CollectionPoints({ points, addPoint, removePoint }) {
   const [show, setShow] = useState(false);
   const [form, setForm] = useState({ name:"", city:"", status:"Active" });
@@ -700,14 +884,14 @@ function CollectionPoints({ points, addPoint, removePoint }) {
   const add = () => {
     if(!form.name.trim()){ setErr("Point name is required."); return; }
     if(!form.city.trim()){ setErr("City is required."); return; }
-    addPoint({ name:form.name.trim(), city:form.city.trim(), status:form.status }); close();
+    addPoint({ name:form.name.trim(), fullName: form.name.trim(), city:form.city.trim(), status:form.status }); close();
   };
   return (
     <div className="content">
       {show && <Modal title="Add Collection Point" onClose={close}>
         <div className="modal-body">
-          <label className="field"><span>Point Name</span><input autoFocus placeholder="e.g. المستودع الغربي" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} /></label>
-          <label className="field"><span>City</span><input placeholder="e.g. الإسكندرية" value={form.city} onChange={e=>setForm(f=>({...f,city:e.target.value}))} /></label>
+          <label className="field"><span>Point Name</span><input autoFocus placeholder="e.g. Faculty of Science" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} /></label>
+          <label className="field"><span>City</span><input placeholder="e.g. Delta University · Gamasa" value={form.city} onChange={e=>setForm(f=>({...f,city:e.target.value}))} /></label>
           <label className="field"><span>Status</span><select value={form.status} onChange={e=>setForm(f=>({...f,status:e.target.value}))}><option>Active</option><option>Inactive</option></select></label>
           {err && <p className="modal-err">{err}</p>}
         </div>
@@ -715,7 +899,7 @@ function CollectionPoints({ points, addPoint, removePoint }) {
       </Modal>}
       <div className="two-col">
         <section className="card">
-          <div className="section-title"><h2>Points List</h2><button className="green-btn" onClick={()=>setShow(true)}>＋ Add Point</button></div>
+          <div className="section-title"><h2>Points List ({points.length})</h2><button className="green-btn" onClick={()=>setShow(true)}>＋ Add Point</button></div>
           {points.map(p=>(
             <div className="point-row" key={p.id}>
               <span className="point-pin">⌖</span>
@@ -755,6 +939,9 @@ function CollectionPoints({ points, addPoint, removePoint }) {
   );
 }
 
+/* ══════════════════════════════════════════════════════════════
+   Settings
+   ══════════════════════════════════════════════════════════════ */
 function Settings({ adminPin, setAdminPin, users, addUser, removeUser, toggleUserAdminAccess }) {
   const [tab, setTab] = useState("users");
   const [showAddUser, setShowAddUser] = useState(false);
@@ -1013,6 +1200,9 @@ function Settings({ adminPin, setAdminPin, users, addUser, removeUser, toggleUse
   );
 }
 
+/* ══════════════════════════════════════════════════════════════
+   Restricted Admin Card
+   ══════════════════════════════════════════════════════════════ */
 function RestrictedAdminCard({ onUnlock, onBack }) {
   return (
     <div className="content">
@@ -1031,6 +1221,9 @@ function RestrictedAdminCard({ onUnlock, onBack }) {
   );
 }
 
+/* ══════════════════════════════════════════════════════════════
+   PIN Modal
+   ══════════════════════════════════════════════════════════════ */
 function PinModal({ onClose, onUnlock, users }) {
   const [pin, setPin] = useState("");
   const [err, setErr] = useState("");
@@ -1114,6 +1307,7 @@ function PinModal({ onClose, onUnlock, users }) {
   );
 }
 
+/* ── Helpers ── */
 function formatDate(date) {
   return new Date(`${date}T12:00:00`).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"});
 }

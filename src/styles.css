@@ -2569,3 +2569,169 @@ nav {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   Waste Category Material Cards (Photos & Metrics)
+   ========================================================================== */
+
+.waste-image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 18px;
+  margin-top: 14px;
+}
+
+.waste-image-card {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.waste-image-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.waste-img-wrap {
+  width: 100%;
+  height: 148px;
+  background: #f1f5f9;
+  position: relative;
+  overflow: hidden;
+}
+
+.waste-cat-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.waste-image-card:hover .waste-cat-img {
+  transform: scale(1.05);
+}
+
+.waste-img-info {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.waste-img-info h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  font-family: var(--font-display);
+}
+
+.waste-img-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+}
+
+.waste-img-stats > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.waste-img-stats strong {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--emerald-deep);
+  font-family: var(--font-display);
+  line-height: 1.2;
+}
+
+.waste-img-stats small {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-top: 2px;
+}
+
+/* ==========================================================================
+   Page Toolbar & Pagination
+   ========================================================================== */
+
+.page-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.page-toolbar .search {
+  flex: 1;
+  min-width: 220px;
+}
+
+.record-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  background: #f1f5f9;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.admin-prompt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f8fafc;
+  color: var(--ink-secondary);
+  border-color: #cbd5e1;
+}
+
+.admin-prompt-btn:hover {
+  border-color: var(--emerald);
+  color: var(--emerald-deep);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--line);
+  background: #fafbfc;
+}
+
+.page-info {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .waste-image-grid {
+    grid-template-columns: 1fr;
+  }
+  .page-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .pagination {
+    justify-content: center;
+  }
+}
